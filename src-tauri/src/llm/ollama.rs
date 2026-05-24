@@ -40,6 +40,12 @@ impl OllamaClient {
         Ok(res.response)
     }
 
+    pub fn embedding_sync(&self, input: &str) -> Result<Vec<f32>, String> {
+        let rt = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;
+        rt.block_on(self.embedding("qwen2.5:1.5b", input))
+            .map_err(|e| e.to_string())
+    }
+
     pub async fn embedding(&self, model: &str, input: &str) -> Result<Vec<f32>, reqwest::Error> {
         let client = reqwest::Client::new();
         let res = client
