@@ -40,6 +40,12 @@ impl OllamaClient {
         Ok(res.response)
     }
 
+    pub fn generate_sync(&self, model: &str, prompt: &str) -> Result<String, String> {
+        let rt = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;
+        rt.block_on(self.generate(model, prompt))
+            .map_err(|e| e.to_string())
+    }
+
     pub fn embedding_sync(&self, input: &str) -> Result<Vec<f32>, String> {
         let rt = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;
         rt.block_on(self.embedding("qwen2.5:1.5b", input))

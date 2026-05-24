@@ -1,0 +1,39 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0d1117; color: #c9d1d9; }
+
+.app { display: flex; flex-direction: column; height: 100vh; }
+.app-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; background: #161b22; border-bottom: 1px solid #30363d; }
+.app-header h1 { font-size: 1.2rem; color: #58a6ff; }
+.app-nav { display: flex; gap: 8px; }
+.app-nav button { background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 6px 16px; border-radius: 6px; cursor: pointer; }
+.app-nav button.active { background: #1f6feb; border-color: #1f6feb; color: #fff; }
+
+.app-main { flex: 1; overflow: auto; padding: 16px; }
+
+.chat-panel { display: flex; flex-direction: column; height: calc(100vh - 80px); }
+.chat-messages { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 8px; }
+.message { padding: 10px 14px; border-radius: 8px; max-width: 85%; }
+.message.user { background: #1f6feb33; align-self: flex-end; }
+.message.adler { background: #21262d; align-self: flex-start; border: 1px solid #30363d; }
+.chat-input { display: flex; gap: 8px; padding: 8px 0; }
+.chat-input input { flex: 1; padding: 10px; border: 1px solid #30363d; border-radius: 6px; background: #0d1117; color: #c9d1d9; }
+.chat-input button { padding: 10px 20px; background: #1f6feb; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+.chat-input button:disabled { opacity: 0.5; }
+
+.dashboard { max-width: 800px; margin: 0 auto; }
+.dashboard-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 12px; }
+.card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px; }
+.card h3 { color: #58a6ff; font-size: 0.9rem; margin-bottom: 8px; }
+.card p { font-size: 0.85rem; }
+
+.approval-panel { max-width: 700px; margin: 0 auto; }
+.approval-panel h2 { margin-bottom: 12px; }
+.approval-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+.approval-summary { background: #0d1117; padding: 8px; border-radius: 4px; margin: 8px 0; font-size: 0.85rem; }
+.approval-buttons { display: flex; gap: 8px; }
+.btn-approve { background: #238636; color: #fff; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; }
+.btn-reject { background: #da3633; color: #fff; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; }
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #0d1117; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }

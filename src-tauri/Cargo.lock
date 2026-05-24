@@ -19,6 +19,7 @@ dependencies = [
  "chrono",
  "clap",
  "env_logger",
+ "futures-util",
  "git2",
  "log",
  "reqwest 0.12.28",

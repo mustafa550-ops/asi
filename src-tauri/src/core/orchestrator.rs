@@ -1,26 +1,172 @@
-use crate::agents::Agent;
+use crate::agents::supervisor::SupervisorAgent;
+use crate::agents::{Agent, AgentContext, ApprovalLevel};
+use crate::bridge::event_bus::EventBus;
+use crate::core::memory_manager::MemoryManager;
+use crate::llm::OllamaClient;
+use std::collections::HashMap;
+use std::sync::Mutex;
 
-/// Agent Orchestrator — Görev dağıtımı, workflow kontrolü, onay yönetimi (§4.1).
+#[derive(Debug, Clone, PartialEq)]
+pub enum PipelineStep {
+    Intent,
+    Delegate,
+    Plan,
+    Execute,
+    Confirm,
+    Report,
+}
+
 pub struct Orchestrator {
     agents: Vec<Box<dyn Agent + Send>>,
+    pub approval_level: ApprovalLevel,
+    supervisor: SupervisorAgent,
+    pending_approvals: Mutex<HashMap<String, String>>,
 }
 
 impl Orchestrator {
-    pub fn new() -> Self {
-        Self { agents: Vec::new() }
+    pub fn new(approval_level: ApprovalLevel) -> Self {
+        Self {
+            agents: Vec::new(),
+            approval_level,
+            supervisor: SupervisorAgent,
+            pending_approvals: Mutex::new(HashMap::new()),
+        }
     }
 
     pub fn register_agent(&mut self, agent: Box<dyn Agent + Send>) {
         self.agents.push(agent);
     }
 
-    pub fn dispatch(&self, task: &str) -> Vec<String> {
-        self.agents.iter().filter_map(|agent| {
-            if agent.can_handle(task) {
-                Some(agent.name())
-            } else {
-                None
+    pub fn run_pipeline(
+        &self,
+        task: &str,
+        ollama: &OllamaClient,
+        memory: Option<&MemoryManager>,
+        event_bus: Option<&EventBus>,
+    ) -> Result<String, String> {
+        let ctx = AgentContext {
+            ollama,
+            memory,
+            event_bus,
+            approval: self.approval_level.clone(),
+        };
+
+        // 1. Intent Analysis
+        let intent = self.step_intent(task, &ctx)?;
+        let log = format!("[Pipeline] STEP 1/6 — Intent: {}", intent);
+        if let Some(bus) = event_bus {
+            bus.emit("pipeline-step", &log);
+        }
+
+        // 2. Agent Delegation
+        let matched: Vec<&Box<dyn Agent + Send>> = self.agents.iter()
+            .filter(|a| a.can_handle(task) || intent.to_lowercase().contains(&a.name().to_lowercase()))
+            .collect();
+        if matched.is_empty() {
+            return Err(format!("Hiçbir ajan '{}' görevini işleyemiyor", task));
+        }
+        let log = format!("[Pipeline] STEP 2/6 — Delegated to {} agent(s): {}",
+            matched.len(), matched.iter().map(|a| a.name()).collect::<Vec<_>>().join(", "));
+        if let Some(bus) = event_bus {
+            bus.emit("pipeline-step", &log);
+        }
+
+        // 3. Plan (use first matching agent for plan generation)
+        let plan = self.step_plan(task, matched[0].as_ref(), &ctx)?;
+        let log = format!("[Pipeline] STEP 3/6 — Plan: {}", plan);
+        if let Some(bus) = event_bus {
+            bus.emit("pipeline-step", &log);
+        }
+
+        // 4. Execute (run all matching agents)
+        let mut results = Vec::new();
+        for agent in &matched {
+            match agent.execute(task, &ctx) {
+                Ok(r) => {
+                    results.push(format!("[{}] Başarılı: {}", agent.name(), r));
+                    let log = format!("[Pipeline] STEP 4/6 — {} completed", agent.name());
+                    if let Some(bus) = event_bus {
+                        bus.emit("pipeline-step", &log);
+                    }
+                }
+                Err(e) => {
+                    let log = format!("[Pipeline] STEP 4/6 — {} failed: {}", agent.name(), e);
+                    if let Some(bus) = event_bus {
+                        bus.emit("pipeline-error", &log);
+                    }
+                    // Retry via supervisor
+                    match self.supervisor.execute(&format!("retry {}", task), &ctx) {
+                        Ok(fix) => results.push(format!("[Supervisor] {}", fix)),
+                        Err(super_err) => results.push(format!("[{}] Hata: {}\n[Supervisor] Kurtarılamadı: {}", agent.name(), e, super_err)),
+                    }
+                }
             }
-        }).collect()
+        }
+
+        // 5. Confirmation (for critical operations)
+        if self.approval_level == ApprovalLevel::Observer && matched.len() > 1 {
+            if let Some(bus) = event_bus {
+                let confirm_id = format!("confirm-{}", std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis());
+                let summary = results.join("\n");
+                {
+                    let mut pending = self.pending_approvals.lock().unwrap();
+                    pending.insert(confirm_id.clone(), summary.clone());
+                }
+                bus.emit("approval-required", &format!("{{\"id\":\"{}\",\"task\":\"{}\",\"summary\":\"{}\"}}",
+                    confirm_id, task, summary.replace('"', "'")));
+                results.push(format!("[Confirmation] Onay bekleniyor — ID: {}", confirm_id));
+            }
+        }
+        let log = format!("[Pipeline] STEP 5/6 — Confirmation level: {:?}", self.approval_level);
+        if let Some(bus) = event_bus {
+            bus.emit("pipeline-step", &log);
+        }
+
+        // 6. Report
+        let report = self.step_report(task, &results, memory)?;
+        let log = format!("[Pipeline] STEP 6/6 — Report generated");
+        if let Some(bus) = event_bus {
+            bus.emit("pipeline-complete", &log);
+        }
+        Ok(report)
+    }
+
+    fn step_intent(&self, task: &str, ctx: &AgentContext) -> Result<String, String> {
+        let prompt = format!(
+            "Kullanıcı mesajını analiz et. En uygun kategoriyi seç: sorgu, eylem, analiz, donanım, kripto, sistem, doküman, ses.\n\
+             Sadece kategori adını yaz.\nMesaj: {}", task);
+        ctx.ollama.generate_sync("qwen2.5:1.5b", &prompt).map(|r| r.trim().to_string())
+    }
+
+    fn step_plan(&self, _task: &str, agent: &dyn Agent, _ctx: &AgentContext) -> Result<String, String> {
+        Ok(format!("Plan: {} tarafından işlenecek. Adımlar: Girdiyi doğrula → İşle → Sonuçları raporla → Hafızaya kaydet", agent.name()))
+    }
+
+    fn step_report(&self, task: &str, results: &[String], memory: Option<&MemoryManager>) -> Result<String, String> {
+        let mut report = format!("=== ADLER Rapor ===\nGörev: {}\n\n", task);
+        for r in results {
+            report.push_str(r);
+            report.push('\n');
+        }
+        report.push_str("\n---\nSistem stabil.");
+        if let Some(mem) = memory {
+            mem.store_long_term(&report, "Orchestrator", "log").ok();
+        }
+        Ok(report)
+    }
+
+    pub fn approve(&self, id: &str) -> Result<String, String> {
+        let mut pending = self.pending_approvals.lock().unwrap();
+        pending.remove(id).ok_or_else(|| format!("Onay ID '{}' bulunamadı veya süresi doldu", id))
+    }
+
+    pub fn reject(&self, id: &str) -> Result<(), String> {
+        let mut pending = self.pending_approvals.lock().unwrap();
+        pending.remove(id).ok_or_else(|| format!("Onay ID '{}' bulunamadı", id)).map(|_| ())
+    }
+
+    pub fn pending_count(&self) -> usize {
+        self.pending_approvals.lock().unwrap().len()
     }
 }

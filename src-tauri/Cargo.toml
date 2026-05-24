@@ -30,6 +30,7 @@ reqwest = { version = "0.12", features = ["json"] }
 # MCP / WebSocket
 tokio-tungstenite = "0.24"
 url = "2"
+futures-util = "0.3"
 
 # CLI
 clap = { version = "4", features = ["derive"] }

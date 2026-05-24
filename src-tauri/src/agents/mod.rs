@@ -7,10 +7,27 @@ pub mod document_analyst;
 pub mod voice_handler;
 pub mod supervisor;
 
-/// Agent trait — Tüm ajanlar bu interface'i implement eder (§4.1).
+use crate::bridge::event_bus::EventBus;
+use crate::core::memory_manager::MemoryManager;
+use crate::llm::OllamaClient;
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum ApprovalLevel {
+    Observer,
+    SemiAutonomous,
+    Strategic,
+}
+
+pub struct AgentContext<'a> {
+    pub ollama: &'a OllamaClient,
+    pub memory: Option<&'a MemoryManager>,
+    pub event_bus: Option<&'a EventBus>,
+    pub approval: ApprovalLevel,
+}
+
 pub trait Agent {
     fn name(&self) -> String;
     fn description(&self) -> String;
     fn can_handle(&self, task: &str) -> bool;
-    fn execute(&self, task: &str) -> Result<String, String>;
+    fn execute(&self, task: &str, ctx: &AgentContext) -> Result<String, String>;
 }
