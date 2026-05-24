@@ -1,0 +1,55 @@
+[package]
+name = "adler-asi"
+version = "0.1.0"
+edition = "2021"
+description = "ADLER ASI - Autonomous Digital Operator"
+
+[lib]
+name = "adler_asi_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# Tauri core
+tauri = { version = "2", features = [] }
+tauri-plugin-shell = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# SQLite + Vector search
+rusqlite = { version = "0.32", features = ["bundled"] }
+
+# HTTP client (Ollama API)
+reqwest = { version = "0.12", features = ["json"] }
+
+# MCP / WebSocket
+tokio-tungstenite = "0.24"
+url = "2"
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# Logging
+log = "0.4"
+env_logger = "0.11"
+
+# Error handling
+thiserror = "2"
+anyhow = "1"
+
+# Git (libgit2 for assimilation)
+git2 = "0.19"
+
+# Wasm sandbox
+wasmtime = "24"
+
+# System monitoring
+sysinfo = "0.32"
+
+# Crypto
+ring = "0.17"
