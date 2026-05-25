@@ -25,7 +25,7 @@ impl Agent for IntentJudge {
         );
         let category = ctx
             .ollama
-            .generate_sync("qwen2.5:1.5b", &prompt)?;
+            .generate_sync(&prompt)?;
         let category = category.trim().to_lowercase();
         Ok(format!("Intent classified: {}", category))
     }

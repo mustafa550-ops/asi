@@ -10,6 +10,14 @@ pub struct ModuleEntry {
     pub created_at: String,
 }
 
+#[derive(Debug, Clone)]
+pub struct SkillEntry {
+    pub id: i64,
+    pub name: String,
+    pub run_count: i64,
+    pub created_at: String,
+}
+
 pub struct ModuleRegistry {
     conn: Arc<Mutex<Connection>>,
 }
@@ -50,7 +58,15 @@ impl ModuleRegistry {
         Ok(())
     }
 
-    pub fn list(&self) -> Result<Vec<ModuleEntry>, String> {
+    pub fn list_all(&self) -> Vec<ModuleEntry> {
+        self.list().unwrap_or_default()
+    }
+
+    pub fn list_skills(&self) -> Vec<SkillEntry> {
+        self.skill_list().unwrap_or_default()
+    }
+
+    fn list(&self) -> Result<Vec<ModuleEntry>, String> {
         let conn = self.conn.lock().map_err(|e| e.to_string())?;
         let mut stmt = conn
             .prepare("SELECT id, name, path, dependencies, created_at FROM module_registry ORDER BY name")
@@ -99,5 +115,27 @@ impl ModuleRegistry {
         let conn = self.conn.lock().map_err(|e| e.to_string())?;
         conn.query_row("SELECT COUNT(*) FROM module_registry", [], |row| row.get(0))
             .map_err(|e| e.to_string())
+    }
+
+    fn skill_list(&self) -> Result<Vec<SkillEntry>, String> {
+        let conn = self.conn.lock().map_err(|e| e.to_string())?;
+        let mut stmt = conn
+            .prepare("SELECT id, name, run_count, created_at FROM skill_registry ORDER BY name")
+            .map_err(|e| e.to_string())?;
+        let rows = stmt
+            .query_map([], |row| {
+                Ok(SkillEntry {
+                    id: row.get(0)?,
+                    name: row.get(1)?,
+                    run_count: row.get(2)?,
+                    created_at: row.get(3)?,
+                })
+            })
+            .map_err(|e| e.to_string())?;
+        let mut entries = Vec::new();
+        for row in rows {
+            entries.push(row.map_err(|e| e.to_string())?);
+        }
+        Ok(entries)
     }
 }

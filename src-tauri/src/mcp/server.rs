@@ -10,10 +10,10 @@ pub struct McpServer {
     port: u16,
     tools: Arc<Mutex<HashMap<String, String>>>,
 }
-
 #[derive(Debug, Deserialize)]
 struct JsonRpcRequest {
     method: String,
+    #[allow(dead_code)]
     params: serde_json::Value,
     id: u64,
 }

@@ -35,4 +35,24 @@ impl Keyring {
     pub fn list(&self) -> Vec<&String> {
         self.keys.keys().collect()
     }
+
+    pub fn persist(&self, path: &str) -> Result<(), String> {
+        let data: Vec<(String, Vec<u8>)> = self.keys.iter()
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect();
+        let json = serde_json::to_string(&data).map_err(|e| e.to_string())?;
+        std::fs::write(path, &json).map_err(|e| format!("Keyring yazma: {}", e))
+    }
+
+    pub fn load(path: &str, master_key: &[u8]) -> Result<Self, String> {
+        let content = std::fs::read_to_string(path)
+            .map_err(|e| format!("Keyring okuma: {}", e))?;
+        let data: Vec<(String, Vec<u8>)> = serde_json::from_str(&content)
+            .map_err(|e| e.to_string())?;
+        let mut kr = Self::new(master_key)?;
+        for (name, enc) in data {
+            kr.keys.insert(name, enc);
+        }
+        Ok(kr)
+    }
 }

@@ -25,7 +25,7 @@ tokio = { version = "1", features = ["full"] }
 rusqlite = { version = "0.32", features = ["bundled"] }
 
 # HTTP client (Ollama API)
-reqwest = { version = "0.12", features = ["json"] }
+reqwest = { version = "0.12", features = ["json", "blocking"] }
 
 # MCP / WebSocket
 tokio-tungstenite = "0.24"
@@ -60,3 +60,17 @@ chrono = { version = "0.4", features = ["serde"] }
 
 # Crypto
 ring = "0.17"
+
+# Voice: audio capture
+cpal = "0.15"
+
+# Voice: offline STT (Vosk)
+vosk = "0.3"
+
+# Wake word: keyword spotting (STT-based)
+
+# Voice: WAV output
+hound = "3.5"
+
+# Voice: text preprocessing
+unicode-normalization = "0.1"

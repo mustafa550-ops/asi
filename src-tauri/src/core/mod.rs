@@ -2,6 +2,7 @@ pub mod orchestrator;
 pub mod memory_manager;
 pub mod self_healing;
 pub mod wasm_sandbox;
+pub mod wasm_compile;
 pub mod tool_registry;
 
 use crate::agents::ApprovalLevel;

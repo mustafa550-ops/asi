@@ -123,6 +123,16 @@ impl MemoryManager {
             .map_err(|e| format!("Query failed: {}", e))
     }
 
+    pub fn get_high_confidence_decisions(
+        &self,
+        min_confidence: f64,
+        limit: usize,
+    ) -> Result<Vec<StrategicRecord>, String> {
+        self.strategic
+            .get_high_confidence(min_confidence, limit)
+            .map_err(|e| format!("Query failed: {}", e))
+    }
+
     pub fn add_edge(
         &self,
         parent_id: i64,

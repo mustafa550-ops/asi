@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone)]
 pub struct OllamaClient {
     pub base_url: String,
+    pub model: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -19,16 +20,20 @@ struct GenerateResponse {
 }
 
 impl OllamaClient {
-    pub fn new(base_url: String) -> Self {
-        Self { base_url }
+    pub fn new(base_url: String, model: String) -> Self {
+        Self { base_url, model }
     }
 
-    pub async fn generate(&self, model: &str, prompt: &str) -> Result<String, reqwest::Error> {
+    pub fn model(&self) -> &str {
+        &self.model
+    }
+
+    pub async fn generate(&self, prompt: &str) -> Result<String, reqwest::Error> {
         let client = reqwest::Client::new();
         let res = client
             .post(format!("{}/api/generate", self.base_url))
             .json(&GenerateRequest {
-                model: model.to_string(),
+                model: self.model.clone(),
                 prompt: prompt.to_string(),
                 stream: false,
             })
@@ -40,24 +45,24 @@ impl OllamaClient {
         Ok(res.response)
     }
 
-    pub fn generate_sync(&self, model: &str, prompt: &str) -> Result<String, String> {
+    pub fn generate_sync(&self, prompt: &str) -> Result<String, String> {
         let rt = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;
-        rt.block_on(self.generate(model, prompt))
+        rt.block_on(self.generate(prompt))
             .map_err(|e| e.to_string())
     }
 
     pub fn embedding_sync(&self, input: &str) -> Result<Vec<f32>, String> {
         let rt = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;
-        rt.block_on(self.embedding("qwen2.5:1.5b", input))
+        rt.block_on(self.embedding(input))
             .map_err(|e| e.to_string())
     }
 
-    pub async fn embedding(&self, model: &str, input: &str) -> Result<Vec<f32>, reqwest::Error> {
+    pub async fn embedding(&self, input: &str) -> Result<Vec<f32>, reqwest::Error> {
         let client = reqwest::Client::new();
         let res = client
             .post(format!("{}/api/embeddings", self.base_url))
             .json(&serde_json::json!({
-                "model": model,
+                "model": self.model,
                 "prompt": input
             }))
             .send()

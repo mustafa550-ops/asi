@@ -53,4 +53,17 @@ impl Encryption {
 
         Ok(plaintext.to_vec())
     }
+
+    pub fn key_from_password(password: &str, salt: &[u8]) -> Result<[u8; 32], String> {
+        use ring::pbkdf2;
+        let mut key = [0u8; 32];
+        pbkdf2::derive(
+            pbkdf2::PBKDF2_HMAC_SHA256,
+            std::num::NonZeroU32::new(100_000).unwrap(),
+            salt,
+            password.as_bytes(),
+            &mut key,
+        );
+        Ok(key)
+    }
 }

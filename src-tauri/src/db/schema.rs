@@ -62,6 +62,19 @@ pub fn create_tables(conn: &Connection) -> Result<(), rusqlite::Error> {
         CREATE INDEX IF NOT EXISTS idx_strategic_outcome ON strategic_memory(outcome);
         CREATE INDEX IF NOT EXISTS idx_strategic_confidence ON strategic_memory(confidence);
         CREATE INDEX IF NOT EXISTS idx_strategic_updated ON strategic_memory(updated_at);
+
+        CREATE TABLE IF NOT EXISTS skill_registry (
+            id INTEGER PRIMARY KEY,
+            name TEXT UNIQUE NOT NULL,
+            description TEXT DEFAULT '',
+            triggers TEXT DEFAULT '[]',
+            approval TEXT DEFAULT 'required',
+            steps TEXT DEFAULT '[]',
+            logic_code TEXT DEFAULT '',
+            evolution TEXT DEFAULT '[]',
+            run_count INTEGER DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
         "
     )?;
     Ok(())

@@ -3,6 +3,8 @@ use crate::agents::{Agent, AgentContext, ApprovalLevel};
 use crate::bridge::event_bus::EventBus;
 use crate::core::memory_manager::MemoryManager;
 use crate::llm::OllamaClient;
+use crate::skill::executor::SkillExecutor;
+use crate::skill::registry::SkillRegistry;
 use std::collections::HashMap;
 use std::sync::Mutex;
 
@@ -21,6 +23,8 @@ pub struct Orchestrator {
     pub approval_level: ApprovalLevel,
     supervisor: SupervisorAgent,
     pending_approvals: Mutex<HashMap<String, String>>,
+    skill_registry: Option<SkillRegistry>,
+    skill_executor: SkillExecutor,
 }
 
 impl Orchestrator {
@@ -30,7 +34,14 @@ impl Orchestrator {
             approval_level,
             supervisor: SupervisorAgent,
             pending_approvals: Mutex::new(HashMap::new()),
+            skill_registry: None,
+            skill_executor: SkillExecutor::new(),
         }
+    }
+
+    pub fn with_skill_registry(mut self, registry: SkillRegistry) -> Self {
+        self.skill_registry = Some(registry);
+        self
     }
 
     pub fn register_agent(&mut self, agent: Box<dyn Agent + Send>) {
@@ -49,7 +60,33 @@ impl Orchestrator {
             memory,
             event_bus,
             approval: self.approval_level.clone(),
+            vosk_model_path: "",
         };
+
+        // Phase 0: Skill Trigger Check (§6)
+        if let Some(ref registry) = self.skill_registry {
+            let matched_skills = registry.find_by_trigger(task, Some(ollama)).unwrap_or_default();
+            if let Some(skill) = matched_skills.first() {
+                let log = format!("[Pipeline] SKILL TRIGGERED: {} ({} trigger ile eşleşti)", skill.name, skill.triggers.len());
+                if let Some(bus) = event_bus {
+                    bus.emit("pipeline-step", &log);
+                }
+
+                let result = self.skill_executor.execute(skill, task, ollama, memory)?;
+                registry.increment_run_count(&skill.name).ok();
+
+                let report = format!(
+                    "=== ADLER Skill Rapor ===\nSkill: {}\n{}\n{}",
+                    skill.name, result.summary, result.step_results.join("\n")
+                );
+
+                if let Some(mem) = memory {
+                    mem.store_long_term(&report, &skill.name, "skill_execution").ok();
+                }
+
+                return Ok(report);
+            }
+        }
 
         // 1. Intent Analysis
         let intent = self.step_intent(task, &ctx)?;
@@ -71,14 +108,14 @@ impl Orchestrator {
             bus.emit("pipeline-step", &log);
         }
 
-        // 3. Plan (use first matching agent for plan generation)
+        // 3. Plan
         let plan = self.step_plan(task, matched[0].as_ref(), &ctx)?;
         let log = format!("[Pipeline] STEP 3/6 — Plan: {}", plan);
         if let Some(bus) = event_bus {
             bus.emit("pipeline-step", &log);
         }
 
-        // 4. Execute (run all matching agents)
+        // 4. Execute
         let mut results = Vec::new();
         for agent in &matched {
             match agent.execute(task, &ctx) {
@@ -94,7 +131,6 @@ impl Orchestrator {
                     if let Some(bus) = event_bus {
                         bus.emit("pipeline-error", &log);
                     }
-                    // Retry via supervisor
                     match self.supervisor.execute(&format!("retry {}", task), &ctx) {
                         Ok(fix) => results.push(format!("[Supervisor] {}", fix)),
                         Err(super_err) => results.push(format!("[{}] Hata: {}\n[Supervisor] Kurtarılamadı: {}", agent.name(), e, super_err)),
@@ -103,7 +139,7 @@ impl Orchestrator {
             }
         }
 
-        // 5. Confirmation (for critical operations)
+        // 5. Confirmation
         if self.approval_level == ApprovalLevel::Observer && matched.len() > 1 {
             if let Some(bus) = event_bus {
                 let confirm_id = format!("confirm-{}", std::time::SystemTime::now()
@@ -136,7 +172,7 @@ impl Orchestrator {
         let prompt = format!(
             "Kullanıcı mesajını analiz et. En uygun kategoriyi seç: sorgu, eylem, analiz, donanım, kripto, sistem, doküman, ses.\n\
              Sadece kategori adını yaz.\nMesaj: {}", task);
-        ctx.ollama.generate_sync("qwen2.5:1.5b", &prompt).map(|r| r.trim().to_string())
+        ctx.ollama.generate_sync(&prompt).map(|r| r.trim().to_string())
     }
 
     fn step_plan(&self, _task: &str, agent: &dyn Agent, _ctx: &AgentContext) -> Result<String, String> {

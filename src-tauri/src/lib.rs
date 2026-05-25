@@ -8,6 +8,7 @@ pub mod mcp;
 pub mod cli;
 pub mod security;
 pub mod config;
+pub mod skill;
 
 use std::sync::Mutex;
 use tauri::{Manager, State};
@@ -15,13 +16,11 @@ use tauri::{Manager, State};
 use agents::intent_judge::IntentJudge;
 use agents::diagnostic::DiagnosticAgent;
 use agents::hardware::HardwareController;
-use agents::market_analyst::MarketAnalyst;
 use agents::system_manager::SystemManager;
 use agents::document_analyst::DocumentAnalyst;
-use agents::voice_handler::VoiceHandler;
 use agents::supervisor::SupervisorAgent;
-use agents::ApprovalLevel;
 use bridge::event_bus::EventBus;
+use config::AppConfig;
 use core::memory_manager::MemoryManager;
 use core::orchestrator::Orchestrator;
 use llm::context_manager::ContextManager;
@@ -80,9 +79,70 @@ fn get_context(state: State<AppState>) -> Result<String, String> {
     Ok(context.build_prompt())
 }
 
+fn init_app_state(app: &tauri::App, config: &AppConfig) -> Result<(), Box<dyn std::error::Error>> {
+    let db_path = app
+        .path()
+        .app_data_dir()
+        .unwrap_or_else(|_| std::path::PathBuf::from("."))
+        .join(&config.db_path);
+
+    if let Some(parent) = db_path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+
+    let conn = db::open(&db_path)?;
+    let ollama = OllamaClient::new(config.ollama_url.clone(), config.ollama_model.clone());
+
+    let skill_conn = std::sync::Arc::clone(&conn);
+    let skill_registry = skill::registry::SkillRegistry::new(skill_conn);
+
+    let memory = MemoryManager::new(conn, ollama.clone());
+    let context = ContextManager::new(8192);
+
+    let mut orchestrator = Orchestrator::new(config.resolve_approval_level())
+        .with_skill_registry(skill_registry);
+    orchestrator.register_agent(Box::new(IntentJudge));
+    orchestrator.register_agent(Box::new(DiagnosticAgent));
+    orchestrator.register_agent(Box::new(HardwareController));
+    orchestrator.register_agent(Box::new(agents::market_analyst::MarketAnalyst::new()));
+    orchestrator.register_agent(Box::new(SystemManager));
+    orchestrator.register_agent(Box::new(DocumentAnalyst));
+    orchestrator.register_agent(Box::new(agents::voice_handler::VoiceHandler::new()));
+    orchestrator.register_agent(Box::new(SupervisorAgent));
+
+    let event_bus = Some(EventBus::new(app.handle().clone()));
+
+    let mcp_server = mcp::server::McpServer::new(config.mcp_port);
+    let cloned = mcp_server.clone();
+    std::thread::spawn(move || {
+        let rt = tokio::runtime::Runtime::new().expect("Failed to create tokio runtime for MCP");
+        rt.block_on(async move {
+            if let Err(e) = cloned.start().await {
+                log::error!("MCP server error: {}", e);
+            }
+        });
+    });
+
+    app.manage(AppState {
+        memory: Mutex::new(memory),
+        context: Mutex::new(context),
+        orchestrator: Mutex::new(orchestrator),
+        event_bus: Mutex::new(event_bus),
+        llm: ollama,
+    });
+
+    log::info!(
+        "ADLER ASI initialized — 8 agents, MCP on :{}, approval={:?}",
+        config.mcp_port,
+        config.resolve_approval_level()
+    );
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     env_logger::init();
+    let config = AppConfig::load();
 
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
@@ -92,46 +152,56 @@ pub fn run() {
             reject_action,
             get_context,
         ])
-        .setup(|app| {
-            let db_path = app
-                .path()
-                .app_data_dir()
-                .unwrap_or_else(|_| std::path::PathBuf::from("."))
-                .join("adler.db");
-
-            if let Some(parent) = db_path.parent() {
-                std::fs::create_dir_all(parent).ok();
-            }
-
-            let conn = db::open(&db_path).expect("Failed to initialize database");
-            let ollama = OllamaClient::new("http://localhost:11434".to_string());
-
-            let memory = MemoryManager::new(conn, ollama.clone());
-            let context = ContextManager::new(8192);
-
-            let mut orchestrator = Orchestrator::new(ApprovalLevel::SemiAutonomous);
-            orchestrator.register_agent(Box::new(IntentJudge));
-            orchestrator.register_agent(Box::new(DiagnosticAgent));
-            orchestrator.register_agent(Box::new(HardwareController));
-            orchestrator.register_agent(Box::new(MarketAnalyst));
-            orchestrator.register_agent(Box::new(SystemManager));
-            orchestrator.register_agent(Box::new(DocumentAnalyst));
-            orchestrator.register_agent(Box::new(VoiceHandler));
-            orchestrator.register_agent(Box::new(SupervisorAgent));
-
-            let event_bus = Some(EventBus::new(app.handle().clone()));
-
-            app.manage(AppState {
-                memory: Mutex::new(memory),
-                context: Mutex::new(context),
-                orchestrator: Mutex::new(orchestrator),
-                event_bus: Mutex::new(event_bus),
-                llm: ollama,
-            });
-
-            log::info!("ADLER ASI initialized — 8 agents registered, all systems go");
+        .setup(move |app| {
+            init_app_state(app, &config)?;
             Ok(())
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+pub fn run_headless(config: &AppConfig) -> Result<String, String> {
+    env_logger::init();
+    log::info!("ADLER ASI headless mode — config loaded from {:?}", AppConfig::config_path());
+
+    let db_path = std::path::Path::new(&config.db_path);
+    if let Some(parent) = db_path.parent() {
+        std::fs::create_dir_all(parent).ok();
+    }
+
+    let conn = db::open(db_path).map_err(|e| e.to_string())?;
+    let ollama = OllamaClient::new(config.ollama_url.clone(), config.ollama_model.clone());
+
+    let skill_conn = std::sync::Arc::clone(&conn);
+    let skill_registry = skill::registry::SkillRegistry::new(skill_conn);
+
+    let memory = MemoryManager::new(conn, ollama.clone());
+    let context = ContextManager::new(8192);
+
+    let mut orchestrator = Orchestrator::new(config.resolve_approval_level())
+        .with_skill_registry(skill_registry);
+    orchestrator.register_agent(Box::new(IntentJudge));
+    orchestrator.register_agent(Box::new(DiagnosticAgent));
+    orchestrator.register_agent(Box::new(HardwareController));
+    orchestrator.register_agent(Box::new(agents::market_analyst::MarketAnalyst::new()));
+    orchestrator.register_agent(Box::new(SystemManager));
+    orchestrator.register_agent(Box::new(DocumentAnalyst));
+    orchestrator.register_agent(Box::new(agents::voice_handler::VoiceHandler::new()));
+    orchestrator.register_agent(Box::new(SupervisorAgent));
+
+    log::info!("Headless orchestrator ready — {} agents, skill registry active", 8);
+    drop(context);
+
+    let mcp_server = mcp::server::McpServer::new(config.mcp_port);
+    std::thread::spawn(move || {
+        let rt = tokio::runtime::Runtime::new().expect("Failed to create tokio runtime for MCP");
+        rt.block_on(async move {
+            if let Err(e) = mcp_server.start().await {
+                log::error!("MCP server error (headless): {}", e);
+            }
+        });
+    });
+
+    let result = orchestrator.run_pipeline("sistem durumu", &ollama, Some(&memory), None)?;
+    Ok(result)
 }

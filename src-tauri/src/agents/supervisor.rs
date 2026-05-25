@@ -16,7 +16,7 @@ impl Agent for SupervisorAgent {
                 "Kullanıcı isteğini değerlendir ve nasıl çözüleceğini açıkla.\n\
                  İstek: {}\nDeneme: {}/3\nKısa ve net bir yanıt ver.", target, attempt
             );
-            match ctx.ollama.generate_sync("qwen2.5:1.5b", &prompt) {
+            match ctx.ollama.generate_sync(&prompt) {
                 Ok(response) => {
                     if attempt > 1 {
                         return Ok(format!("[Supervisor] {} numaralı denemede başarılı (önceki hata: {})\nYanıt: {}",

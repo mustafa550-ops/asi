@@ -23,6 +23,7 @@ pub struct AgentContext<'a> {
     pub memory: Option<&'a MemoryManager>,
     pub event_bus: Option<&'a EventBus>,
     pub approval: ApprovalLevel,
+    pub vosk_model_path: &'a str,
 }
 
 pub trait Agent {
