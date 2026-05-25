@@ -6,3 +6,5 @@ target/
 *.db-wal
 .env
 .DS_Store
+src-tauri/modules/supertonic/
+src-tauri/modules/test-assim-repo/

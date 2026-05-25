@@ -1,0 +1,15 @@
+[submodule "src-tauri/modules/claude-obsidian"]
+	path = src-tauri/modules/claude-obsidian
+	url = https://github.com/AgriciDaniel/claude-obsidian.git
+[submodule "src-tauri/modules/jarvis"]
+	path = src-tauri/modules/jarvis
+	url = https://github.com/Priler/jarvis.git
+[submodule "src-tauri/modules/jarvis-backend"]
+	path = src-tauri/modules/jarvis-backend
+	url = https://github.com/DEENUU1/jarvis-backend.git
+[submodule "src-tauri/modules/jarvis-desktop"]
+	path = src-tauri/modules/jarvis-desktop
+	url = https://github.com/DEENUU1/jarvis-desktop.git
+[submodule "src-tauri/modules/OpenJarvis"]
+	path = src-tauri/modules/OpenJarvis
+	url = https://github.com/open-jarvis/OpenJarvis.git
