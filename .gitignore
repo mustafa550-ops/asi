@@ -8,3 +8,7 @@ target/
 .DS_Store
 src-tauri/modules/supertonic/
 src-tauri/modules/test-assim-repo/
+
+# Asimile moduller - buyuk binary/model dosyalari (kaynak kodlari saklanir)
+modules/jarvis/resources/
+modules/jarvis/lib/
