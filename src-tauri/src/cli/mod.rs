@@ -69,6 +69,7 @@ fn run(command: &Commands) -> Result<String, String> {
     let ollama = OllamaClient::new(config.ollama_url.clone(), config.ollama_model.clone());
     let ctx = AgentContext {
         ollama: &ollama,
+        claude: None,
         memory: None,
         event_bus: None,
         approval: config.resolve_approval_level(),

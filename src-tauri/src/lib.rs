@@ -24,7 +24,9 @@ use config::AppConfig;
 use core::memory_manager::MemoryManager;
 use core::orchestrator::Orchestrator;
 use llm::context_manager::ContextManager;
+use llm::claude::ClaudeClient;
 use llm::OllamaClient;
+use skill::parser::ManifestoParser;
 
 pub struct AppState {
     pub memory: Mutex<MemoryManager>,
@@ -79,6 +81,71 @@ fn get_context(state: State<AppState>) -> Result<String, String> {
     Ok(context.build_prompt())
 }
 
+#[tauri::command]
+fn list_skills(state: State<AppState>) -> Result<Vec<skill::Skill>, String> {
+    let orch = state.orchestrator.lock().map_err(|e| e.to_string())?;
+    let registry = orch.skill_registry()
+        .ok_or_else(|| "Skill registry aktif degil".to_string())?;
+    registry.list()
+}
+
+#[tauri::command]
+fn toggle_skill(state: State<AppState>, name: String) -> Result<String, String> {
+    let orch = state.orchestrator.lock().map_err(|e| e.to_string())?;
+    let registry = orch.skill_registry()
+        .ok_or_else(|| "Skill registry aktif degil".to_string())?;
+    let skill = registry.get_by_name(&name)?
+        .ok_or_else(|| format!("Skill '{}' bulunamadi", name))?;
+    if skill.active {
+        registry.deactivate(&name)?;
+        Ok(format!("Skill '{}' pasif edildi", name))
+    } else {
+        registry.activate(&name)?;
+        Ok(format!("Skill '{}' aktif edildi", name))
+    }
+}
+
+#[tauri::command]
+fn delete_skill(state: State<AppState>, name: String) -> Result<String, String> {
+    let orch = state.orchestrator.lock().map_err(|e| e.to_string())?;
+    let registry = orch.skill_registry()
+        .ok_or_else(|| "Skill registry aktif degil".to_string())?;
+    registry.remove(&name)?;
+    Ok(format!("Skill '{}' silindi", name))
+}
+
+#[tauri::command]
+fn add_skill_md(state: State<AppState>, content: String) -> Result<String, String> {
+    let manifesto = ManifestoParser::parse(&content, "inline")?;
+    let steps = ManifestoParser::manifesto_to_steps(&manifesto);
+    let triggers = manifesto.triggers.clone();
+    let evolution = manifesto.evolution.clone();
+
+    let orch = state.orchestrator.lock().map_err(|e| e.to_string())?;
+    let registry = orch.skill_registry()
+        .ok_or_else(|| "Skill registry aktif degil".to_string())?;
+
+    let id = registry.register(
+        &manifesto.name,
+        &manifesto.description,
+        &triggers,
+        &manifesto.approval,
+        &steps,
+        manifesto.logic.as_deref(),
+        &evolution,
+    )?;
+
+    Ok(format!("Skill '{}' eklendi (id: {})", manifesto.name, id))
+}
+
+#[tauri::command]
+fn run_skill_by_name(state: State<AppState>, name: String) -> Result<String, String> {
+    let memory = state.memory.lock().map_err(|e| e.to_string())?;
+    let llm = &state.llm;
+    let orch = state.orchestrator.lock().map_err(|e| e.to_string())?;
+    orch.run_skill_direct(&name, llm, Some(&memory))
+}
+
 fn init_app_state(app: &tauri::App, config: &AppConfig) -> Result<(), Box<dyn std::error::Error>> {
     let db_path = app
         .path()
@@ -93,6 +160,10 @@ fn init_app_state(app: &tauri::App, config: &AppConfig) -> Result<(), Box<dyn st
     let conn = db::open(&db_path)?;
     let ollama = OllamaClient::new(config.ollama_url.clone(), config.ollama_model.clone());
 
+    let claude = config.claude_api_key.clone().map(|key| {
+        ClaudeClient::new_with_config(key, config.claude_model.clone())
+    });
+
     let skill_conn = std::sync::Arc::clone(&conn);
     let skill_registry = skill::registry::SkillRegistry::new(skill_conn);
 
@@ -101,6 +172,9 @@ fn init_app_state(app: &tauri::App, config: &AppConfig) -> Result<(), Box<dyn st
 
     let mut orchestrator = Orchestrator::new(config.resolve_approval_level())
         .with_skill_registry(skill_registry);
+    if let Some(c) = claude {
+        orchestrator = orchestrator.with_claude(c);
+    }
     orchestrator.register_agent(Box::new(IntentJudge));
     orchestrator.register_agent(Box::new(DiagnosticAgent));
     orchestrator.register_agent(Box::new(HardwareController));
@@ -151,6 +225,11 @@ pub fn run() {
             approve_action,
             reject_action,
             get_context,
+            list_skills,
+            toggle_skill,
+            delete_skill,
+            add_skill_md,
+            run_skill_by_name,
         ])
         .setup(move |app| {
             init_app_state(app, &config)?;
@@ -172,6 +251,10 @@ pub fn run_headless(config: &AppConfig) -> Result<String, String> {
     let conn = db::open(db_path).map_err(|e| e.to_string())?;
     let ollama = OllamaClient::new(config.ollama_url.clone(), config.ollama_model.clone());
 
+    let claude = config.claude_api_key.clone().map(|key| {
+        ClaudeClient::new_with_config(key, config.claude_model.clone())
+    });
+
     let skill_conn = std::sync::Arc::clone(&conn);
     let skill_registry = skill::registry::SkillRegistry::new(skill_conn);
 
@@ -180,6 +263,9 @@ pub fn run_headless(config: &AppConfig) -> Result<String, String> {
 
     let mut orchestrator = Orchestrator::new(config.resolve_approval_level())
         .with_skill_registry(skill_registry);
+    if let Some(c) = claude {
+        orchestrator = orchestrator.with_claude(c);
+    }
     orchestrator.register_agent(Box::new(IntentJudge));
     orchestrator.register_agent(Box::new(DiagnosticAgent));
     orchestrator.register_agent(Box::new(HardwareController));

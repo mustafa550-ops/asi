@@ -1,39 +1,18 @@
-import { useState, useRef, useEffect } from "react";
-import { invoke } from "../../lib/tauri";
-
-interface Message {
-  role: "user" | "adler";
-  content: string;
-}
+import { useRef, useEffect } from "react";
+import { useChatStore } from "../../stores/chatStore";
 
 export default function ChatPanel() {
-  const [messages, setMessages] = useState<Message[]>([
-    { role: "adler", content: "ADLER ASI hazır. Nasıl yardımcı olabilirim?" },
-  ]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
+  const messages = useChatStore((s) => s.messages);
+  const input = useChatStore((s) => s.input);
+  const loading = useChatStore((s) => s.loading);
+  const send = useChatStore((s) => s.send);
+  const setInput = useChatStore((s) => s.setInput);
+
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  const send = async () => {
-    const text = input.trim();
-    if (!text || loading) return;
-
-    setInput("");
-    setMessages((p) => [...p, { role: "user", content: text }]);
-    setLoading(true);
-
-    try {
-      const response: string = await invoke("send_command", { command: text });
-      setMessages((p) => [...p, { role: "adler", content: response }]);
-    } catch (err) {
-      setMessages((p) => [...p, { role: "adler", content: `Hata: ${err}` }]);
-    }
-    setLoading(false);
-  };
 
   return (
     <div className="chat-panel">

@@ -9,6 +9,7 @@ pub mod supervisor;
 
 use crate::bridge::event_bus::EventBus;
 use crate::core::memory_manager::MemoryManager;
+use crate::llm::claude::ClaudeClient;
 use crate::llm::OllamaClient;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -20,6 +21,7 @@ pub enum ApprovalLevel {
 
 pub struct AgentContext<'a> {
     pub ollama: &'a OllamaClient,
+    pub claude: Option<&'a ClaudeClient>,
     pub memory: Option<&'a MemoryManager>,
     pub event_bus: Option<&'a EventBus>,
     pub approval: ApprovalLevel,

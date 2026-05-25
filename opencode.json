@@ -1,0 +1,8 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "username": "Mustafa",
+  "instructions": ["CLAUDE.md", "ARCHITECTURE.md", "GUIDELINES.md"],
+  "skills": {
+    "paths": [".opencode/skills"]
+  }
+}

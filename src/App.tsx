@@ -2,9 +2,10 @@ import { useState } from "react";
 import ChatPanel from "./components/chat/ChatPanel";
 import Dashboard from "./components/dashboard/Dashboard";
 import ApprovalPanel from "./components/approval-panels/ApprovalPanel";
+import SkillsManager from "./components/skills-manager/SkillsManager";
 
 export default function App() {
-  const [tab, setTab] = useState<"chat" | "dashboard" | "approval">("chat");
+  const [tab, setTab] = useState<"chat" | "dashboard" | "approval" | "skills">("chat");
 
   return (
     <div className="app">
@@ -14,12 +15,14 @@ export default function App() {
           <button className={tab === "chat" ? "active" : ""} onClick={() => setTab("chat")}>Sohbet</button>
           <button className={tab === "dashboard" ? "active" : ""} onClick={() => setTab("dashboard")}>Dashboard</button>
           <button className={tab === "approval" ? "active" : ""} onClick={() => setTab("approval")}>Onay</button>
+          <button className={tab === "skills" ? "active" : ""} onClick={() => setTab("skills")}>Yetenekler</button>
         </nav>
       </header>
       <main className="app-main">
         {tab === "chat" && <ChatPanel />}
         {tab === "dashboard" && <Dashboard />}
         {tab === "approval" && <ApprovalPanel />}
+        {tab === "skills" && <SkillsManager />}
       </main>
     </div>
   );

@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2021"
 description = "ADLER ASI - Autonomous Digital Operator"
 
+[features]
+default = ["voice"]
+voice = ["dep:vosk"]
+
 [lib]
 name = "adler_asi_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
@@ -64,8 +68,8 @@ ring = "0.17"
 # Voice: audio capture
 cpal = "0.15"
 
-# Voice: offline STT (Vosk)
-vosk = "0.3"
+# Voice: offline STT (Vosk) — opsiyonel, voice feature ile
+vosk = { version = "0.3", optional = true }
 
 # Wake word: keyword spotting (STT-based)
 
