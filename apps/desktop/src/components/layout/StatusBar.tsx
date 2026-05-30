@@ -1,22 +1,28 @@
 import { useEffect, useState } from "react";
 import { invoke } from "../../lib/tauri";
 
-interface StatusInfo {
-  ollama: boolean;
-  agents: number;
-  memory: string;
+interface BackendMetrics {
+  cpu: number;
+  memory: number;
+  uptime: string;
+  active_agents: number;
 }
 
 export function StatusBar() {
-  const [status, setStatus] = useState<StatusInfo>({ ollama: false, agents: 0, memory: "0MB" });
+  const [agents, setAgents] = useState<number | null>(null);
+  const [connected, setConnected] = useState(false);
 
   useEffect(() => {
     const poll = async () => {
       try {
-        const raw = await invoke<string>("send_command", { command: "sistem durumu" });
-        const agents = raw.includes("8 ajan") ? 8 : 0;
-        setStatus({ ollama: raw.includes("Ollama"), agents, memory: "64MB" });
-      } catch { /* ignore */ }
+        const raw = await invoke<string>("get_system_metrics");
+        const data: BackendMetrics = JSON.parse(raw);
+        setAgents(data.active_agents);
+        setConnected(true);
+      } catch {
+        setAgents(null);
+        setConnected(false);
+      }
     };
     poll();
     const id = setInterval(poll, 15000);
@@ -25,13 +31,13 @@ export function StatusBar() {
 
   return (
     <footer className="layout-statusbar" role="status">
-      <span className={`status-indicator ${status.ollama ? "online" : "offline"}`}>
-        Ollama {status.ollama ? "✓" : "✗"}
+      <span className={`status-indicator ${connected ? "online" : "offline"}`}>
+        Sistem {connected ? "✓" : "✗"}
       </span>
       <span className="status-sep">|</span>
-      <span>{status.agents} ajan aktif</span>
+      <span>{agents !== null ? `${agents} ajan aktif` : "-- ajan"}</span>
       <span className="status-sep">|</span>
-      <span>{status.memory}</span>
+      <span>ADLER ASI v0.2.2</span>
     </footer>
   );
 }

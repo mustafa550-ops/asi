@@ -5,6 +5,7 @@ import { Card } from "../components/ui/Card";
 import { invoke } from "../lib/tauri";
 import { toast } from "../components/ui/Toast";
 
+
 type SettingsTab = "general" | "llm" | "voice" | "hardware" | "memory" | "security";
 
 const TABS: { id: SettingsTab; label: string }[] = [
@@ -18,6 +19,7 @@ const TABS: { id: SettingsTab; label: string }[] = [
 
 export function Settings() {
   const [tab, setTab] = useState<SettingsTab>("general");
+
 
   const handleSave = useCallback(async (key: string, event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -56,6 +58,24 @@ export function Settings() {
               <Input label="MCP Port" id="mcp-port" name="mcp-port" defaultValue="9876" />
               <Button type="submit" variant="primary" size="sm">Kaydet</Button>
             </form>
+            <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid var(--border-color)" }}>
+              <label style={{ display: "block", fontSize: "0.8rem", color: "var(--text-secondary)", marginBottom: 8 }}>
+                Tema
+              </label>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  const current = document.documentElement.getAttribute("data-theme");
+                  const next = current === "light" ? "dark" : "light";
+                  document.documentElement.setAttribute("data-theme", next);
+                  localStorage.setItem("adler-theme", next);
+                }}
+              >
+                {document.documentElement.getAttribute("data-theme") === "light" ? "☀️" : "🌙"}{" "}
+                Tema Değiştir
+              </Button>
+            </div>
           </Card>
         )}
         {tab === "llm" && (

@@ -7,6 +7,16 @@ vi.mock("../../lib/tauri", () => ({
   invoke: (...args: unknown[]) => mockInvoke(...args),
 }));
 
+function makeMetrics(overrides: Record<string, unknown> = {}) {
+  return JSON.stringify({
+    cpu: 45,
+    memory: 6.2,
+    uptime: "3600s",
+    active_agents: 8,
+    ...overrides,
+  });
+}
+
 describe("StatusBar", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -18,19 +28,19 @@ describe("StatusBar", () => {
   });
 
   it("renders footer with status role", () => {
-    mockInvoke.mockResolvedValue("sistem durumu");
+    mockInvoke.mockResolvedValue(makeMetrics());
     render(<StatusBar />);
     expect(screen.getByRole("status")).toBeInTheDocument();
   });
 
-  it("shows offline ollama initially", () => {
-    mockInvoke.mockResolvedValue("sistem durumu");
+  it("shows offline indicator initially", () => {
+    mockInvoke.mockResolvedValue(makeMetrics());
     render(<StatusBar />);
     expect(screen.getByText(/✗/)).toBeInTheDocument();
   });
 
-  it("updates ollama status when invoke indicates ollama is running", async () => {
-    mockInvoke.mockResolvedValue("Ollama bagli. 8 ajan aktif.");
+  it("updates to online when metrics arrive", async () => {
+    mockInvoke.mockResolvedValue(makeMetrics());
     render(<StatusBar />);
     await act(async () => {
       await vi.advanceTimersByTimeAsync(0);
@@ -38,13 +48,19 @@ describe("StatusBar", () => {
     expect(screen.getByText(/✓/)).toBeInTheDocument();
   });
 
-  it("shows agent count", async () => {
-    mockInvoke.mockResolvedValue("8 ajan aktif. Ollama bagli.");
+  it("shows agent count from metrics", async () => {
+    mockInvoke.mockResolvedValue(makeMetrics({ active_agents: 8 }));
     render(<StatusBar />);
     await act(async () => {
       await vi.advanceTimersByTimeAsync(0);
     });
     expect(screen.getByText(/8 ajan/)).toBeInTheDocument();
+  });
+
+  it("shows version string", () => {
+    mockInvoke.mockResolvedValue(makeMetrics());
+    render(<StatusBar />);
+    expect(screen.getByText(/v0.2.2/)).toBeInTheDocument();
   });
 
   it("handles invoke errors gracefully", async () => {
@@ -54,11 +70,12 @@ describe("StatusBar", () => {
       await vi.advanceTimersByTimeAsync(0);
     });
     expect(screen.getByRole("status")).toBeInTheDocument();
+    expect(screen.getByText(/-- ajan/)).toBeInTheDocument();
   });
 
   it("uses setInterval for polling", () => {
     const setIntervalSpy = vi.spyOn(window, "setInterval");
-    mockInvoke.mockResolvedValue("sistem durumu");
+    mockInvoke.mockResolvedValue(makeMetrics());
     render(<StatusBar />);
     expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 15000);
     setIntervalSpy.mockRestore();

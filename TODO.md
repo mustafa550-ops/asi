@@ -1,8 +1,8 @@
 # ADLER ASI — Yapılacaklar Listesi
 
 > **Son güncelleme:** 2026-05-30
-> **Mevcut versiyon:** 0.2.1 (Alpha - Tauri Bridge + UI Wiring)
-> **Durum:** Alpha — RAG Pipeline + UI Entegrasyonu Tamamlandı
+> **Mevcut versiyon:** 0.2.2 (Alpha - Milestone 1 rötuşlar)
+> **Durum:** Alpha — ~%87 komple (260/300 görev tamam)
 
 ---
 
@@ -92,46 +92,193 @@
 
 ---
 
-## 3. Devam Eden ve Sıradaki Fazlar
+## 3. Devam Eden Fazlar (Kısmi Eksikler)
+
+> 🔍 **Not:** FAZ 9-12 kodda büyük oranda implemente edilmiş durumda. Aşağıda sadece kalan eksikler işaretlenmiştir. Tamamlanan maddeler üstte [x] ile gösterilir.
 
 ### Phase 9 — Skill Registry & Manifesto Sistemi (G151-G165)
-- [ ] Skill manifesto parser, şema validasyonu
-- [ ] Skill tetikleyici motoru, runtime (Node.js)
-- [ ] Skill sandbox (Wasm), API bridge
-- [ ] Skill versiyonlama, gelişim takibi
-- [ ] Skill market, template generator, dependency resolver
-- [ ] Skill Registry UI
+- [x] Skill manifesto parser (YAML frontmatter + markdown body)
+- [x] Skill şema validasyonu (trigger/approval/steps/logic_code)
+- [x] Skill registry CRUD (SQLite-backed, substring + semantic trigger matching)
+- [x] Skill executor (Python/JS/Shell/Wasm adım adım icra, step pipeline)
+- [x] Skill evolution (10 çalıştırmada davranış modeli türetme, strategic memory sorgu)
+- [x] Skill Registry UI (3 panelli: list/detail/add)
+- [ ] Skill Wasm sandbox izolasyonu (wasmtime var, skill'e bağlı değil)
+- [ ] Skill API Bridge (FS/DB/HTTP erişimi)
+- [ ] Skill migration/rollback versiyonlama
+- [ ] Skill export/import (.adler-skill formatı)
+- [ ] Skill market (lokal katalog, rating)
+- [ ] Skill template generator, dependency resolver
 
 ### Phase 10 — Intent Judge & NLP (G166-G180)
-- [ ] Intent classification (LLM tabanlı)
-- [ ] NER, bağlam anlama, duygu analizi
-- [ ] Çok dilli destek, confidence threshold
-- [ ] Slot filling, custom intent, A/B test
+- [x] Intent classification (10 variant: Sorgu/Eylem/Analiz/Chat/Donanim/Kripto/Sistem/Dokuman/Ses/Bilinmiyor)
+- [x] NER (coin symbol, price, GPIO pin extraction)
+- [x] Bağlam anlama (anaphora resolution: bunu/onu/şunu)
+- [x] Duygu analizi (Urgent/Neutral/Casual)
+- [x] Çok dilli destek (Türkçe/İngilizce intent detection)
+- [x] Confidence threshold (%60 altı → Chat fallback)
+- [x] Intent fallback & repair (anlaşılmayan komutlarda öneri)
+- [x] Slot filling (eksik parametre sorma)
+- [x] Custom intent registry (kullanıcı tanımlı intent'ler)
+- [x] Prompt templates (intent/entity/sentiment/context için few-shot)
+- [x] Intent cache (LRU)
+- [ ] Intent A/B test (iki prompt versiyonunu karşılaştırma)
+- [ ] Weekly intent accuracy report
 
 ### Phase 11 — Ollama & Cloud LLM (G181-G205)
-- [ ] Ollama client, model yöneticisi, context window
-- [ ] Prompt template engine, stream parser
-- [ ] Model benchmark, fallback, quantizasyon
-- [ ] Prompt injection koruması, function calling
-- [ ] Claude API client, hibrit mod, maliyet optimizasyonu
+- [x] Ollama HTTP client (/api/generate, /api/chat, stream)
+- [x] Model yöneticisi (listeleme, indirme, silme)
+- [x] Context window yöneticisi (system + history + RAG, token sayma)
+- [x] Prompt template engine (Handlebars-style değişken enjeksiyonu)
+- [x] Stream parser (SSE token işleme)
+- [x] Model benchmark (latency, token/s, accuracy)
+- [x] Model fallback zinciri (llama3→mistral→gemma)
+- [x] Quantization seçimi (q4/q8/fp16 donanıma göre)
+- [x] Ollama health check & otomatik başlatma
+- [x] Prompt injection koruması (sistem prompt izolasyonu)
+- [x] LLM response cache
+- [x] Function calling (JSON mode tool call)
+- [x] Claude API client (/v1/messages, stream)
+- [x] API anahtar yönetimi (keyring)
+- [x] Cloud fallback (yerel yetersiz kalınca otomatik buluta geçiş)
+- [x] Hibrit mod (basit intent yerelde, karmaşık analiz bulutta)
+- [x] Maliyet optimizasyonu (input token, cache, model seçimi)
+- [x] Prompt cache (Anthropic feature)
+- [x] Cloud rate limit (429 yönetimi, retry, backoff)
+- [x] Cloud güvenlik audit (PII tarama, log)
+- [ ] LLM fine-tuning pipeline (LoRA)
 
 ### Phase 12 — Sesli Asistan (G206-G220)
-- [ ] Wake word algılama, ses kaydı
-- [ ] STT (Vosk + Whisper), TTS (Piper)
-- [ ] Ses kuyruğu, sesli diyalog yöneticisi
-- [ ] Ses profilleri, gürültü engelleme
+- [x] Wake word algılama ("adler", "hey adler")
+- [x] Ses kaydı (cpal ile PCM capture, noise gate)
+- [x] STT Vosk (offline speech-to-text, Türkçe/İngilizce)
+- [x] TTS 3-kademeli fallback (espeak-ng → supertonic API → sine-wave WAV)
+- [x] Voice Handler ajanı (Agent trait, start/stop listener)
+- [x] Voice Assistant UI (full-screen overlay, waveform, FAB)
+- [ ] Whisper STT entegrasyonu (whisper.cpp)
+- [ ] STT fallback (Vosk → Whisper)
+- [ ] ElevenLabs TTS fallback
+- [ ] Ses kuyruğu yöneticisi (priority, interrupt)
+- [ ] Gerçek zamanlı ses çıkışı (şu an WAV dosyası yazıyor)
+- [ ] Diyalog yöneticisi (turn-taking, barge-in)
+- [ ] Ses profilleri (hız/ton/aksan)
+- [ ] Gürültü engelleme (RNNoise/speexdsp)
 - [ ] Çoklu dil sesli destek
+
+### Phase 13 — Wasm Sandbox & Güvenlik (G236-G250)
+- [x] Wasmtime runtime kurulumu
+- [x] Wasm bellek limiti (128MB/256MB)
+- [x] Wasm CPU limiti (fuel-based, 10M instruction)
+- [x] Wasm FS izolasyonu (WASI, izinli dizinler)
+- [x] Wasm ağ izolasyonu (izinli domain)
+- [x] Wasm host fonksiyonları (log, emit_event, read_config)
+- [x] Wasm modül imzalama (Ed25519)
+- [x] Wasm modül karantina (24 saat, sınırlı yetki)
+- [x] Güvenlik audit log (append-only)
+- [x] PII tarama (giden isteklerde TC kimlik/telefon/adres)
+- [x] Şifreleme yardımcıları (AES-256-GCM, argon2)
+- [x] Sistem anahtar zinciri (keyring crate)
+- [x] CSP & content security (Tauri)
+- [ ] Security test suite (sandbox kaçış, yetki aşımı)
+- [ ] Security dokümantasyonu (threat model, STRIDE)
+
+### Phase 14 — Asimilasyon Motoru (G221-G235)
+- [x] Repo klonlayıcı (git2, shallow clone)
+- [x] Repo analizör (dil tespiti, bağımlılık okuma)
+- [x] Bağımlılık haritası (Cargo/NPM/Python/Go/Ruby/C#)
+- [x] Kod parçalayıcı (core/interface/config ayrımı)
+- [x] Adaptasyon motoru (Python/JS/Go→Rust transpiler)
+- [x] Static analysis (cargo check, clippy, fmt)
+- [x] Wasm sandbox testi
+- [x] Entegrasyon planlayıcı (risk assessment)
+- [x] Bridge kod üretici (Tauri command wrapper)
+- [x] Asimilasyon onay akışı (pipeline sonunda özet)
+- [x] Geri alma (rollback: temp/registry/dizin temizleme)
+- [x] Modül registry kaydı (SQLite)
+- [x] Asimilasyon CLI (--assimilate)
+- [ ] Asimilasyon log & markdown rapor
+
+### Phase 15 — Donanım Kontrolörü (G251-G260)
+- [x] GPIO abstraction (sysfs, pin export/unexport)
+- [x] Röle sürücüsü (gpio.write wrapper)
+- [x] Sensör okuyucu (DS18B20, CPU temp)
+- [ ] Donanım keşif (I2C/GPIO auto-detect)
+- [ ] Donanım simülatörü (test için mock)
+- [ ] Donanım event handler (voltaj→event)
+- [ ] Donanım güvenliği (failsafe, watchdog)
+- [ ] Donanım konfigürasyonu (YAML pin mapping)
+- [ ] Donanım test suite
+- [ ] Donanım UI paneli (React)
+
+### Phase 16 — Market Analisti (G261-G270)
+- [x] Binance REST client (kline, ticker, orderbook)
+- [x] Binance WebSocket (canlı fiyat akışı)
+- [x] Veri normalizasyonu (standart OHLCV Candle)
+- [x] Teknik indikatörler (RSI, MACD, EMA, hacim profili)
+- [x] Sinyal üretici (al/sat/bekle, bottom fishing)
+- [ ] Risk yöneticisi (pozisyon büyüklüğü, stop-loss)
+- [ ] Strategic memory sorgu (geçmiş sinyal başarısı)
+- [ ] Piyasa rapor üretici (markdown/grafik)
+- [ ] Paper trading (sanal bakiye simülasyonu)
+
+### Phase 17 — MCP & CLI (G271-G280)
+- [x] MCP server (WebSocket, JSON-RPC 2.0)
+- [x] MCP client (harici server'a bağlanma)
+- [x] Tool registry (MCPToolRegistry, 5 built-in tool)
+- [x] CLI (clap, 9 subcommand: assimilate, skill-add/list/activate/deactivate/run/remove, diagnostic, status, security-audit)
+- [ ] CLI chat modu (REPL)
+- [ ] CLI log görüntüleyici (follow/filter)
+- [ ] CLI rapor üretici (PDF)
+- [ ] Self-train (sandbox'ta yeni yöntem dene, öner)
+
+### Phase 18 — Self-Healing & Git (G281-G290)
+- [x] Hata tespit motoru (log pattern matching)
+- [x] Log analizör (hata zinciri çıkarma)
+- [x] Dry-run derleyici (sandbox'ta derleme)
+- [x] Otomatik patch üretici (syntax fix)
+- [x] Self-healing onay akışı
+- [x] Git entegrasyonu (libgit2, auto commit `[ADLER-SELFHEAL]`)
+- [x] Otomatik commit mesajı
+- [ ] Feature branch yöneticisi (adler/auto-heal)
+- [ ] Git diff etki analizi
+- [ ] Self-healing test suite (5 hata senaryosu)
+
+### Phase 19 — Test & Kalite (G291-G300)
+- [x] Rust unit test coverage (%69 stmts)
+- [x] Rust integration testleri (19 dosya, ~62 test)
+- [x] React component testleri (227 test, 35 dosya)
+- [x] React E2E testler (5 Playwright)
+- [ ] Load test (100 eşzamanlı ajan, 1000 RPS)
+- [ ] Fuzz test (CLI + API input)
+- [ ] Haftalık güvenlik audit (cargo audit)
+- [ ] CPU/memory profilleme (flamegraph)
+- [ ] Dokümantasyon testleri (cargo test --doc)
+- [ ] Release checklist
+
+### Phase 20 — Dağıtım & v1.0
+- [ ] `Result<T, String>` → custom `AdlerError` enum (G018)
+- [ ] Brute-force cosine → HNSW ANN index (>10k embedding)
+- [ ] Husky hook fix (şu an non-blocking)
+- [ ] Light theme CSS
+- [ ] CodeRunner (G116)
+- [ ] Zero-Mock: SystemMetrics mock fallback kaldırma
+- [ ] StatusBar string parsing → structured invoke
+- [ ] Genel coverage %69 → %75+
 
 ---
 
 ## 4. Known Issues (Bilinen Sorunlar)
 
 | # | Sorun | Etki | Öncelik |
-|---|-------|------|---------|
+|----|-------|------|---------|
 | 1 | `voice` feature libvosk gerektiriyor | `--no-default-features` ile test | DÜŞÜK |
 | 2 | Wasm sandbox henüz skill'lerde aktif değil | Skill'ler native çalışır | ORTA |
 | 3 | LLM pipeline canlı Ollama gerektiriyor | Testler mock LLM ile geçer | DÜŞÜK |
 | 4 | HW Controller gerçek GPIO gerektiriyor | Simulator mod ile test | DÜŞÜK |
+| 5 | SystemMetrics mock fallback (Zero-Mock ihlali) | Backend yokken sahte veri gösterir | ORTA |
+| 6 | StatusBar string parsing (`raw.includes("8 ajan")`) | Ajan sayısı değişince kırılır | ORTA |
+| 7 | Husky pre-commit non-blocking modda | Commit öncesi check bypass | DÜŞÜK |
+| 8 | `Result<T, String>` custom error enum yok | Hata zinciri zayıf | ORTA |
 
 ---
 
@@ -140,11 +287,12 @@
 | Metrik | Değer | Hedef |
 |--------|-------|-------|
 | Rust test sayısı | 402 (285 unit + 117 integration) | 500+ |
-| React test sayısı | 227 (35 dosya) | 300+ |
-| Coverage (stmts) | %69 | %65 |
+| React test sayısı | 228 (35 dosya) | 300+ |
+| Coverage (stmts) | %69 | %75+ |
 | E2E test | 5 Playwright | 10+ |
 | `cargo check` | 0 error | 0 |
-| Monorepo | apps/desktop, packages/* | Modüler |
+| `cargo check --no-default-features` | 0 error | 0 |
+| Monorepo | apps/desktop, apps/core, packages/* | Modüler |
 
 ---
 
@@ -152,7 +300,8 @@
 
 - [x] **v0.1.0**: İlk iskelet
 - [x] **v0.2.0**: Headless Core + Tauri Bridge
-- [x] **v0.2.1**: RAG Pipeline + UI Wiring (şu an)
-- [ ] **v0.3.0**: Skill Registry + NLP
-- [ ] **v0.4.0**: Voice Assistant + LLM
-- [ ] **v1.0.0**: Tam Otonom Yapay Zeka Operatörü
+- [x] **v0.2.1**: RAG Pipeline + UI Wiring
+- [x] **v0.2.2**: Milestone 1 rötuşlar (şu an)
+- [ ] **v0.3.0**: Voice Assistant (Whisper, ElevenLabs, ses kuyruğu, diyalog)
+- [ ] **v0.4.0**: HW Panel + Market Risk + CLI Chat
+- [ ] **v1.0.0**: Tam Otonom Yapay Zeka Operatörü (test coverage %75+, load test, güvenlik audit)
