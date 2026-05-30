@@ -2,6 +2,15 @@ pub mod parser;
 pub mod registry;
 pub mod executor;
 pub mod evolution;
+pub mod schema;
+pub mod bridge;
+pub mod version;
+pub mod export;
+pub mod market;
+pub mod templates;
+pub mod deps;
+pub mod test_framework;
+pub mod wasm_runtime;
 
 use serde::{Deserialize, Serialize};
 
