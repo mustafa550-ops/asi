@@ -93,7 +93,11 @@ export default function HardwarePanel() {
       <h3>Donanim Paneli</h3>
 
       <div className="hardware-actions">
-        <button className="btn btn-secondary" onClick={scanHardware} disabled={scanning}>
+        <button
+          className="btn btn-secondary"
+          onClick={scanHardware}
+          disabled={scanning}
+        >
           {scanning ? "Taranıyor..." : "Donanim Tara"}
         </button>
         <button className="btn btn-secondary" onClick={readSensors}>
@@ -120,22 +124,47 @@ export default function HardwarePanel() {
             onChange={(e) => setGpioPin(Number(e.target.value))}
           />
           <span className="hardware-gpio-value">Deger: {gpioValue}</span>
-          <button className="btn btn-sm" onClick={() => readGpio()}>Oku</button>
-          <button className="btn btn-sm btn-success" onClick={() => writeGpio(true)}>HIGH</button>
-          <button className="btn btn-sm btn-danger" onClick={() => writeGpio(false)}>LOW</button>
+          <button className="btn btn-sm" onClick={() => readGpio()}>
+            Oku
+          </button>
+          <button
+            className="btn btn-sm btn-success"
+            onClick={() => writeGpio(true)}
+          >
+            HIGH
+          </button>
+          <button
+            className="btn btn-sm btn-danger"
+            onClick={() => writeGpio(false)}
+          >
+            LOW
+          </button>
         </div>
       </div>
 
       <div className="hardware-section">
         <h4>Role</h4>
         <div className="hardware-relay-row">
-          {config?.gpio_pins && Object.entries(config.gpio_pins).map(([name, pin]) => (
-            <div key={name} className="hardware-relay-item">
-              <span>{name} (pin {pin})</span>
-              <button className="btn btn-sm btn-success" onClick={() => toggleRelay(pin, true)}>AC</button>
-              <button className="btn btn-sm btn-danger" onClick={() => toggleRelay(pin, false)}>KAPA</button>
-            </div>
-          ))}
+          {config?.gpio_pins &&
+            Object.entries(config.gpio_pins).map(([name, pin]) => (
+              <div key={name} className="hardware-relay-item">
+                <span>
+                  {name} (pin {pin})
+                </span>
+                <button
+                  className="btn btn-sm btn-success"
+                  onClick={() => toggleRelay(pin, true)}
+                >
+                  AC
+                </button>
+                <button
+                  className="btn btn-sm btn-danger"
+                  onClick={() => toggleRelay(pin, false)}
+                >
+                  KAPA
+                </button>
+              </div>
+            ))}
         </div>
       </div>
 
@@ -144,12 +173,16 @@ export default function HardwarePanel() {
         <div className="hardware-device-list">
           {devices.map((d, i) => (
             <div key={i} className="hardware-device-item">
-              <span className="hardware-device-icon">{busIcons[d.bus_type] || "❓"}</span>
+              <span className="hardware-device-icon">
+                {busIcons[d.bus_type] || "❓"}
+              </span>
               <span className="hardware-device-name">{d.name}</span>
               <span className="hardware-device-desc">{d.description}</span>
             </div>
           ))}
-          {devices.length === 0 && <span className="hardware-empty">Cihaz bulunamadi</span>}
+          {devices.length === 0 && (
+            <span className="hardware-empty">Cihaz bulunamadi</span>
+          )}
         </div>
       </div>
     </div>

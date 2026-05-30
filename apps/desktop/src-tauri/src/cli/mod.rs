@@ -1,4 +1,5 @@
 use clap::{Parser, Subcommand};
+use std::io::{self, BufRead, Write};
 use std::sync::Arc;
 
 use crate::agents::diagnostic::DiagnosticAgent;
@@ -54,6 +55,9 @@ pub enum Commands {
     },
     #[command(about = "Guvenlik denetimi yap")]
     SecurityAudit,
+
+    #[command(about = "Interaktif sohbet modu (REPL)")]
+    Chat,
 }
 
 pub fn run_from_args() -> Result<String, String> {
@@ -207,6 +211,69 @@ fn run(command: &Commands) -> Result<String, String> {
             let registry = SkillRegistry::new(conn);
             registry.remove(&name)?;
             Ok(format!("Skill '{}' silindi.", name))
+        }
+        Commands::Chat => {
+            let stdin = io::stdin();
+            let mut stdout = io::stdout();
+            println!("ADLER ASI — Sohbet Modu ({} /exit ile cikis)", ctx.ollama.model());
+            println!("{}", "-".repeat(40));
+
+            let mut context: Vec<String> = Vec::new();
+            loop {
+                print!("> ");
+                stdout.flush().map_err(|e| format!("Cikis hatasi: {}", e))?;
+
+                let mut line = String::new();
+                match stdin.lock().read_line(&mut line) {
+                    Ok(0) => break,
+                    Ok(_) => {}
+                    Err(e) => {
+                        if e.kind() == io::ErrorKind::Interrupted {
+                            break;
+                        }
+                        return Err(format!("Okuma hatasi: {}", e));
+                    }
+                }
+
+                let line = line.trim().to_string();
+                if line.is_empty() {
+                    continue;
+                }
+                if line == "/exit" || line == "/quit" {
+                    println!("Gorusmek uzere.");
+                    break;
+                }
+                if line == "/help" {
+                    println!("Komutlar: /exit, /quit, /help, /clear");
+                    continue;
+                }
+                if line == "/clear" {
+                    context.clear();
+                    println!("Hafiza temizlendi.");
+                    continue;
+                }
+
+                let full_prompt = if context.is_empty() {
+                    line.clone()
+                } else {
+                    format!("{}\nKullanici: {}", context.join("\n"), line)
+                };
+
+                match ctx.ollama.generate_sync(&full_prompt) {
+                    Ok(response) => {
+                        println!("Adler: {}", response);
+                        context.push(format!("Kullanici: {}", line));
+                        context.push(format!("Adler: {}", response));
+                        if context.len() > 20 {
+                            context.drain(0..2);
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!("Hata: {}", e);
+                    }
+                }
+            }
+            Ok("Sohbet sonlandi.".into())
         }
         Commands::SecurityAudit => {
             let config_findings = crate::security::SecurityAuditor::audit_config(&config);
