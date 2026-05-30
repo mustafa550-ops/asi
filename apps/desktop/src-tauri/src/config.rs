@@ -1,5 +1,33 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::path::PathBuf;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct HardwareConfig {
+    pub enabled: bool,
+    pub gpio_pins: HashMap<String, u8>,
+    pub sensor_types: Vec<String>,
+    pub relay_pulse_ms: u64,
+    pub safety_max_temp: f64,
+    pub watchdog_timeout_s: u64,
+}
+
+impl Default for HardwareConfig {
+    fn default() -> Self {
+        let mut gpio_pins = HashMap::new();
+        gpio_pins.insert("relay_1".into(), 17);
+        gpio_pins.insert("relay_2".into(), 27);
+        gpio_pins.insert("sensor_temp".into(), 22);
+        Self {
+            enabled: false,
+            gpio_pins,
+            sensor_types: vec!["ds18b20".into(), "cpu_temp".into()],
+            relay_pulse_ms: 500,
+            safety_max_temp: 85.0,
+            watchdog_timeout_s: 5,
+        }
+    }
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppConfig {
@@ -11,6 +39,7 @@ pub struct AppConfig {
     pub vosk_model_path: String,
     pub mcp_port: u16,
     pub approval_level: String,
+    pub hardware: HardwareConfig,
 }
 
 impl Default for AppConfig {
@@ -24,6 +53,7 @@ impl Default for AppConfig {
             vosk_model_path: String::new(),
             mcp_port: 9876,
             approval_level: "SemiAutonomous".to_string(),
+            hardware: HardwareConfig::default(),
         }
     }
 }

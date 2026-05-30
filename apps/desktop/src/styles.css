@@ -1553,3 +1553,132 @@ body {
 .coderunner-error strong {
   color: var(--danger);
 }
+
+/* Hardware Panel */
+.hardware-panel {
+  padding: 16px;
+  max-width: 700px;
+}
+.hardware-panel h3 {
+  margin: 0 0 12px;
+  color: var(--text-primary);
+}
+.hardware-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.hardware-error {
+  background: var(--danger-bg, #3a1a1a);
+  color: var(--danger, #f87171);
+  padding: 8px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+.hardware-section {
+  margin-bottom: 16px;
+}
+.hardware-section h4 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.hardware-sensor-data {
+  background: var(--bg-secondary);
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  white-space: pre-wrap;
+  margin: 0;
+}
+.hardware-gpio-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.hardware-gpio-row input {
+  width: 60px;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+.hardware-gpio-value {
+  font-family: monospace;
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--accent);
+}
+.hardware-relay-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.hardware-relay-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+}
+.hardware-relay-item span:first-child {
+  flex: 1;
+  font-size: 13px;
+}
+.hardware-device-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.hardware-device-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  font-size: 13px;
+}
+.hardware-device-icon {
+  font-size: 16px;
+  width: 24px;
+  text-align: center;
+}
+.hardware-device-name {
+  font-weight: 500;
+  color: var(--text-primary);
+  min-width: 200px;
+}
+.hardware-device-desc {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.hardware-empty {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 13px;
+}
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.btn-sm:hover {
+  background: var(--bg-tertiary);
+}
+.btn-success {
+  border-color: var(--success, #34d399);
+  color: var(--success, #34d399);
+}
+.btn-danger {
+  border-color: var(--danger, #f87171);
+  color: var(--danger, #f87171);
+}

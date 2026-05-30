@@ -19,7 +19,9 @@ describe("CodeRunner", () => {
   });
 
   it("shows line numbers when enabled", () => {
-    const { container } = render(<CodeRunner code={"line1\nline2\nline3"} showLineNumbers />);
+    const { container } = render(
+      <CodeRunner code={"line1\nline2\nline3"} showLineNumbers />,
+    );
     const lineNums = container.querySelectorAll(".coderunner-line-num");
     expect(lineNums.length).toBe(3);
   });

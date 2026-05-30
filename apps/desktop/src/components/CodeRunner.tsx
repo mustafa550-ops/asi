@@ -7,7 +7,11 @@ interface CodeRunnerProps {
   showLineNumbers?: boolean;
 }
 
-export default function CodeRunner({ code, language, showLineNumbers }: CodeRunnerProps) {
+export default function CodeRunner({
+  code,
+  language,
+  showLineNumbers,
+}: CodeRunnerProps) {
   const [output, setOutput] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +48,9 @@ export default function CodeRunner({ code, language, showLineNumbers }: CodeRunn
         {showLineNumbers && (
           <code className="coderunner-lines">
             {lines.map((_, i) => (
-              <span key={i} className="coderunner-line-num">{i + 1}</span>
+              <span key={i} className="coderunner-line-num">
+                {i + 1}
+              </span>
             ))}
           </code>
         )}

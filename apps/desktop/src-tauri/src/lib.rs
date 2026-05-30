@@ -47,6 +47,7 @@ pub struct AppState {
     pub llm: OllamaClient,
     pub rag: Mutex<Option<RagPipeline>>,
     pub sessions: Mutex<SessionsStore>,
+    pub hardware: Mutex<Option<agents::hardware::HardwareController>>,
 }
 
 #[tauri::command]
@@ -256,6 +257,54 @@ fn delete_chat_session(state: State<AppState>, session_id: String) -> Result<Str
 }
 
 #[tauri::command]
+fn gpio_read(state: State<AppState>, pin: u8) -> Result<String, String> {
+    let hw = state.hardware.lock().map_err(|e| e.to_string())?;
+    match hw.as_ref() {
+        Some(ctrl) => ctrl.gpio.read(pin),
+        None => Err("Hardware controller not initialized".into()),
+    }
+}
+
+#[tauri::command]
+fn gpio_write(state: State<AppState>, pin: u8, value: bool) -> Result<String, String> {
+    let hw = state.hardware.lock().map_err(|e| e.to_string())?;
+    match hw.as_ref() {
+        Some(ctrl) => ctrl.gpio.write(pin, value).map(|_| format!("GPIO pin {} -> {}", pin, if value { "HIGH" } else { "LOW" })),
+        None => Err("Hardware controller not initialized".into()),
+    }
+}
+
+#[tauri::command]
+fn sensor_read(state: State<AppState>) -> Result<String, String> {
+    let hw = state.hardware.lock().map_err(|e| e.to_string())?;
+    match hw.as_ref() {
+        Some(ctrl) => ctrl.sensor.read_all(),
+        None => Err("Hardware controller not initialized".into()),
+    }
+}
+
+#[tauri::command]
+fn relay_set(state: State<AppState>, pin: u8, on: bool) -> Result<String, String> {
+    let hw = state.hardware.lock().map_err(|e| e.to_string())?;
+    match hw.as_ref() {
+        Some(ctrl) => ctrl.relay.set(pin, on).map(|_| format!("Relay pin {} -> {}", pin, if on { "ON" } else { "OFF" })),
+        None => Err("Hardware controller not initialized".into()),
+    }
+}
+
+#[tauri::command]
+fn hw_config_get() -> Result<String, String> {
+    let cfg = crate::config::AppConfig::load();
+    serde_json::to_string(&cfg.hardware).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn hw_detect() -> Result<String, String> {
+    let devices = agents::hardware::detect::auto_detect()?;
+    serde_json::to_string(&devices).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 fn get_system_metrics(state: State<AppState>) -> Result<String, String> {
     let memory = state.memory.lock().map_err(|e| e.to_string())?;
     let context = memory.get_short_term_context();
@@ -319,7 +368,7 @@ fn init_app_state(app: &tauri::App, config: &AppConfig) -> Result<(), Box<dyn st
     }
     orchestrator.register_agent(Box::new(IntentJudge));
     orchestrator.register_agent(Box::new(DiagnosticAgent));
-    orchestrator.register_agent(Box::new(HardwareController));
+    orchestrator.register_agent(Box::new(HardwareController::new_real()));
     orchestrator.register_agent(Box::new(agents::market_analyst::MarketAnalyst::new()));
     orchestrator.register_agent(Box::new(SystemManager));
     orchestrator.register_agent(Box::new(DocumentAnalyst));
@@ -344,6 +393,7 @@ fn init_app_state(app: &tauri::App, config: &AppConfig) -> Result<(), Box<dyn st
         llm: ollama,
         rag: Mutex::new(Some(rag_pipeline)),
         sessions: Mutex::new(sessions),
+        hardware: Mutex::new(Some(agents::hardware::HardwareController::new_real())),
     });
 
     tauri::async_runtime::spawn(server::start_server(app.handle().clone()));
@@ -389,6 +439,12 @@ pub fn run() {
             list_chat_sessions,
             delete_chat_session,
             get_agent_statuses,
+            gpio_read,
+            gpio_write,
+            sensor_read,
+            relay_set,
+            hw_config_get,
+            hw_detect,
         ])
         .setup(move |app| {
             // Setup Adler Core Bridge
@@ -451,7 +507,7 @@ pub fn run_headless(config: &AppConfig) -> Result<String, String> {
     }
     orchestrator.register_agent(Box::new(IntentJudge));
     orchestrator.register_agent(Box::new(DiagnosticAgent));
-    orchestrator.register_agent(Box::new(HardwareController));
+    orchestrator.register_agent(Box::new(HardwareController::new_real()));
     orchestrator.register_agent(Box::new(agents::market_analyst::MarketAnalyst::new()));
     orchestrator.register_agent(Box::new(SystemManager));
     orchestrator.register_agent(Box::new(DocumentAnalyst));
