@@ -24,9 +24,41 @@ impl SkillRegistry {
                     run_count INTEGER DEFAULT 0,
                     active INTEGER DEFAULT 1,
                     version INTEGER DEFAULT 1,
+                    category TEXT DEFAULT 'general',
+                    tags TEXT DEFAULT '[]',
+                    rating REAL DEFAULT 0.0,
+                    rating_count INTEGER DEFAULT 0,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                );
+
+                CREATE TABLE IF NOT EXISTS skill_version_history (
+                    id INTEGER PRIMARY KEY,
+                    skill_name TEXT NOT NULL,
+                    version INTEGER NOT NULL,
+                    semver TEXT DEFAULT '1.0.0',
+                    changelog TEXT DEFAULT '',
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                );
+
+                CREATE TABLE IF NOT EXISTS skill_market_reviews (
+                    id INTEGER PRIMARY KEY,
+                    skill_name TEXT NOT NULL,
+                    rating INTEGER CHECK(rating >= 1 AND rating <= 5),
+                    comment TEXT DEFAULT '',
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 );"
             ).ok();
+        }
+        // Migration: add columns for older DBs
+        if let Ok(c) = conn.lock() {
+            for migration in &[
+                "ALTER TABLE skill_registry ADD COLUMN category TEXT DEFAULT 'general'",
+                "ALTER TABLE skill_registry ADD COLUMN tags TEXT DEFAULT '[]'",
+                "ALTER TABLE skill_registry ADD COLUMN rating REAL DEFAULT 0.0",
+                "ALTER TABLE skill_registry ADD COLUMN rating_count INTEGER DEFAULT 0",
+            ] {
+                c.execute(migration, []).ok();
+            }
         }
         Self { conn }
     }
@@ -56,7 +88,7 @@ impl SkillRegistry {
     pub fn find_by_trigger(&self, text: &str, ollama: Option<&OllamaClient>) -> Result<Vec<Skill>, String> {
         let c = self.conn.lock().map_err(|e| e.to_string())?;
         let mut stmt = c.prepare(
-            "SELECT id, name, description, triggers, approval, steps, logic_code, evolution, run_count, active, version, created_at
+            "SELECT id, name, description, triggers, approval, steps, logic_code, evolution, run_count, active, version, created_at, category, tags, rating, rating_count
              FROM skill_registry WHERE active = 1"
         ).map_err(|e| e.to_string())?;
 
@@ -97,7 +129,24 @@ impl SkillRegistry {
             run_count: row.get(8)?,
             active: row.get::<_, i32>(9)? != 0,
             version: row.get(10)?,
-            created_at: row.get(11)?,
+            created_at: {
+                // Column 11 might not exist in old DBs opened before schema migration
+                row.get::<_, String>(11).unwrap_or_default()
+            },
+            category: {
+                row.get::<_, Option<String>>(12).unwrap_or(None).unwrap_or_else(|| "general".into())
+            },
+            tags: {
+                row.get::<_, Option<String>>(13).unwrap_or(None)
+                    .map(|s| serde_json::from_str(&s).unwrap_or_default())
+                    .unwrap_or_default()
+            },
+            rating: {
+                row.get::<_, Option<f64>>(14).unwrap_or(None).unwrap_or(0.0)
+            },
+            rating_count: {
+                row.get::<_, Option<i64>>(15).unwrap_or(None).unwrap_or(0)
+            },
         })
     }
 
@@ -135,7 +184,7 @@ impl SkillRegistry {
     pub fn get_by_name(&self, name: &str) -> Result<Option<Skill>, String> {
         let c = self.conn.lock().map_err(|e| e.to_string())?;
         let mut stmt = c.prepare(
-            "SELECT id, name, description, triggers, approval, steps, logic_code, evolution, run_count, active, version, created_at
+            "SELECT id, name, description, triggers, approval, steps, logic_code, evolution, run_count, active, version, created_at, category, tags, rating, rating_count
              FROM skill_registry WHERE name = ?1"
         ).map_err(|e| e.to_string())?;
 
@@ -151,7 +200,7 @@ impl SkillRegistry {
     pub fn list(&self) -> Result<Vec<Skill>, String> {
         let c = self.conn.lock().map_err(|e| e.to_string())?;
         let mut stmt = c.prepare(
-            "SELECT id, name, description, triggers, approval, steps, logic_code, evolution, run_count, active, version, created_at
+            "SELECT id, name, description, triggers, approval, steps, logic_code, evolution, run_count, active, version, created_at, category, tags, rating, rating_count
              FROM skill_registry ORDER BY name"
         ).map_err(|e| e.to_string())?;
 
@@ -216,6 +265,134 @@ impl SkillRegistry {
             params![name],
             |row| row.get(0),
         ).map_err(|e| e.to_string())
+    }
+
+    // ── Skill Market ──
+
+    pub fn rate_skill(&self, name: &str, rating: i32, comment: &str) -> Result<(), String> {
+        let rating = rating.clamp(1, 5);
+        let c = self.conn.lock().map_err(|e| e.to_string())?;
+        c.execute(
+            "INSERT INTO skill_market_reviews (skill_name, rating, comment) VALUES (?1, ?2, ?3)",
+            params![name, rating, comment],
+        ).map_err(|e| e.to_string())?;
+
+        let avg: f64 = c.query_row(
+            "SELECT AVG(CAST(rating AS REAL)) FROM skill_market_reviews WHERE skill_name = ?1",
+            params![name],
+            |row| row.get(0),
+        ).map_err(|e| e.to_string())?;
+
+        let count: i64 = c.query_row(
+            "SELECT COUNT(*) FROM skill_market_reviews WHERE skill_name = ?1",
+            params![name],
+            |row| row.get(0),
+        ).map_err(|e| e.to_string())?;
+
+        c.execute(
+            "UPDATE skill_registry SET rating = ?1, rating_count = ?2 WHERE name = ?3",
+            params![avg, count, name],
+        ).map_err(|e| e.to_string())?;
+
+        Ok(())
+    }
+
+    pub fn search_by_category(&self, category: &str) -> Result<Vec<Skill>, String> {
+        let c = self.conn.lock().map_err(|e| e.to_string())?;
+        let mut stmt = c.prepare(
+            "SELECT id, name, description, triggers, approval, steps, logic_code, evolution,
+                    run_count, active, version, created_at
+             FROM skill_registry WHERE active = 1 AND category = ?1 ORDER BY rating DESC"
+        ).map_err(|e| e.to_string())?;
+
+        let rows = stmt.query_map(params![category], Self::map_skill_row)
+            .map_err(|e| e.to_string())?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())
+    }
+
+    pub fn top_rated(&self, limit: usize) -> Result<Vec<Skill>, String> {
+        let c = self.conn.lock().map_err(|e| e.to_string())?;
+        let mut stmt = c.prepare(
+            "SELECT id, name, description, triggers, approval, steps, logic_code, evolution,
+                    run_count, active, version, created_at
+             FROM skill_registry WHERE active = 1 ORDER BY rating DESC, rating_count DESC LIMIT ?1"
+        ).map_err(|e| e.to_string())?;
+
+        let rows = stmt.query_map(params![limit as i64], Self::map_skill_row)
+            .map_err(|e| e.to_string())?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())
+    }
+
+    pub fn set_category(&self, name: &str, category: &str, tags: &[String]) -> Result<(), String> {
+        let c = self.conn.lock().map_err(|e| e.to_string())?;
+        let tags_json = serde_json::to_string(tags).map_err(|e| e.to_string())?;
+        c.execute(
+            "UPDATE skill_registry SET category = ?1, tags = ?2 WHERE name = ?3",
+            params![category, tags_json, name],
+        ).map_err(|e| e.to_string())?;
+        Ok(())
+    }
+
+    // ── Skill Versioning ──
+
+    pub fn record_version(&self, name: &str, semver: &str, changelog: &str) -> Result<(), String> {
+        let version = self.get_version(name)?;
+        let c = self.conn.lock().map_err(|e| e.to_string())?;
+        c.execute(
+            "INSERT INTO skill_version_history (skill_name, version, semver, changelog) VALUES (?1, ?2, ?3, ?4)",
+            params![name, version, semver, changelog],
+        ).map_err(|e| e.to_string())?;
+        Ok(())
+    }
+
+    pub fn get_version_history(&self, name: &str) -> Result<Vec<(i32, String, String)>, String> {
+        let c = self.conn.lock().map_err(|e| e.to_string())?;
+        let mut stmt = c.prepare(
+            "SELECT version, semver, changelog FROM skill_version_history
+             WHERE skill_name = ?1 ORDER BY version DESC"
+        ).map_err(|e| e.to_string())?;
+
+        let rows = stmt.query_map(params![name], |row| {
+            Ok((row.get(0)?, row.get::<_, String>(1)?, row.get::<_, String>(2)?))
+        }).map_err(|e| e.to_string())?;
+
+        rows.collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())
+    }
+
+    pub fn rollback_to_version(&self, name: &str, target_version: i32) -> Result<String, String> {
+        let current = self.get_version(name)?;
+        if target_version >= current {
+            return Err(format!("Hedef surum ({}) mevcut surumden ({}) kucuk olmali", target_version, current));
+        }
+        if target_version < 1 {
+            return Err("Gecersiz surum: 1'den kucuk olamaz".into());
+        }
+
+        let c = self.conn.lock().map_err(|e| e.to_string())?;
+
+        let history: Vec<(i32, String)> = {
+            let mut stmt = c.prepare(
+                "SELECT version, semver FROM skill_version_history
+                 WHERE skill_name = ?1 AND version = ?2"
+            ).map_err(|e| e.to_string())?;
+
+            let rows = stmt.query_map(params![name, target_version], |row| {
+                Ok((row.get(0)?, row.get::<_, String>(1)?))
+            }).map_err(|e| e.to_string())?;
+
+            rows.collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())?
+        };
+
+        if history.is_empty() {
+            return Err(format!("Surum {} icin kayit bulunamadi", target_version));
+        }
+
+        c.execute(
+            "UPDATE skill_registry SET version = ?1 WHERE name = ?2",
+            params![target_version, name],
+        ).map_err(|e| e.to_string())?;
+
+        Ok(format!("Skill '{}' surum {}'e geri alindi", name, target_version))
     }
 }
 

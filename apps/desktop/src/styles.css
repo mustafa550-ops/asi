@@ -1473,3 +1473,83 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-secondary);
 }
+
+/* ── CodeRunner ── */
+.coderunner {
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  margin: 8px 0;
+  overflow: hidden;
+}
+.coderunner-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+}
+.coderunner-lang {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+.coderunner-run {
+  padding: 3px 10px;
+  font-size: 12px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--bg-primary);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.coderunner-run:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.coderunner-run:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+.coderunner-code {
+  padding: 12px;
+  margin: 0;
+  background: var(--bg-primary);
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.5;
+  display: flex;
+}
+.coderunner-lines {
+  display: inline-block;
+  text-align: right;
+  padding-right: 12px;
+  margin-right: 12px;
+  border-right: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  user-select: none;
+}
+.coderunner-line-num {
+  display: block;
+}
+.coderunner-output {
+  padding: 8px 12px;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-color);
+  font-size: 13px;
+}
+.coderunner-output strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-secondary);
+}
+.coderunner-output pre {
+  margin: 0;
+  white-space: pre-wrap;
+  font-size: 12px;
+}
+.coderunner-error {
+  border-top-color: var(--danger);
+}
+.coderunner-error strong {
+  color: var(--danger);
+}

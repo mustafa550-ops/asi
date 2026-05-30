@@ -166,6 +166,13 @@ fn run_skill_by_name(state: State<AppState>, name: String) -> Result<String, Str
 }
 
 #[tauri::command]
+fn run_code(_state: State<AppState>, code: String) -> Result<String, String> {
+    let executor = crate::skill::executor::SkillExecutor::new();
+    let result = executor.execute_code(&code)?;
+    Ok(result)
+}
+
+#[tauri::command]
 fn start_listening() -> Result<String, String> {
     log::info!("Tauri command: start_listening");
     Ok("Started listening".into())
@@ -366,6 +373,7 @@ pub fn run() {
             delete_skill,
             add_skill_md,
             run_skill_by_name,
+            run_code,
             start_listening,
             stop_listening,
             synthesize_speech,

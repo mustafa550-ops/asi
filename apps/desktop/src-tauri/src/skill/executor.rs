@@ -82,7 +82,7 @@ impl SkillExecutor {
         ollama.generate_sync(&prompt)
     }
 
-    fn execute_code(&self, code: &str) -> Result<String, String> {
+    pub fn execute_code(&self, code: &str) -> Result<String, String> {
         let code = code.trim();
         if code.starts_with("#!/usr/bin/env python") || code.starts_with("import ") || code.contains("def ") {
             return self.run_python(code);
@@ -255,6 +255,10 @@ mod tests {
             active: true,
             version: 1,
             created_at: String::new(),
+            category: "general".into(),
+            tags: vec![],
+            rating: 0.0,
+            rating_count: 0,
         }
     }
 

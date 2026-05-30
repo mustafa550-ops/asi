@@ -1,8 +1,8 @@
 # ADLER ASI — Yapılacaklar Listesi
 
 > **Son güncelleme:** 2026-05-30
-> **Mevcut versiyon:** 0.2.3 (Alpha - Milestone 2: Voice Assistant)
-> **Durum:** Alpha — ~%87 komple (260/300 görev tamam)
+> **Mevcut versiyon:** 0.2.4 (Alpha - Milestone 3: CodeRunner + Strategic Query + Skill Market/Versioning)
+> **Durum:** Alpha — ~%89 komple (266/300 görev tamam)
 
 ---
 
@@ -70,7 +70,7 @@
 - [x] ErrorBoundary, LoadingStates, klavye navigasyonu
 - [x] a11y (aria-label, role, tabindex)
 - [ ] PWA / Web manifest (düşük öncelik)
-- [x] 227 component testi
+- [x] 232 component testi
 
 ### Phase 7 — Chat & Sesli Arayüz (G106-G120)
 - [x] Chat arayüzü, Message bubble, Markdown render
@@ -78,7 +78,7 @@
 - [x] ChatHistory (backend session), ContextWindow (RAG)
 - [x] Slash commands, VoiceAssistant full-screen (G117)
 - [x] Approval loop UI, proactive alert
-- [ ] CodeRunner (G116) — chat'te kod çalıştırma
+- [x] CodeRunner (G116) — chat'te kod çalıştırma (CodeRunner.tsx + run_code Tauri cmd)
 - [ ] Global klavye kısayolları
 
 ### Phase 8 — RAG Pipeline (G136-G150)
@@ -105,9 +105,9 @@
 - [x] Skill Registry UI (3 panelli: list/detail/add)
 - [ ] Skill Wasm sandbox izolasyonu (wasmtime var, skill'e bağlı değil)
 - [ ] Skill API Bridge (FS/DB/HTTP erişimi)
-- [ ] Skill migration/rollback versiyonlama
+- [x] Skill versioning & rollback (G158: skill_version_history tablosu, record_version, rollback_to_version)
 - [ ] Skill export/import (.adler-skill formatı)
-- [ ] Skill market (lokal katalog, rating)
+- [x] Skill market (G161: skill_market_reviews, rate_skill, search_by_category, top_rated)
 - [ ] Skill template generator, dependency resolver
 
 ### Phase 10 — Intent Judge & NLP (G166-G180)
@@ -217,7 +217,7 @@
 - [x] Teknik indikatörler (RSI, MACD, EMA, hacim profili)
 - [x] Sinyal üretici (al/sat/bekle, bottom fishing)
 - [ ] Risk yöneticisi (pozisyon büyüklüğü, stop-loss)
-- [ ] Strategic memory sorgu (geçmiş sinyal başarısı)
+- [x] Strategic memory sorgu (G267: strategic_query.rs, SignalStats, best_strategies)
 - [ ] Piyasa rapor üretici (markdown/grafik)
 - [ ] Paper trading (sanal bakiye simülasyonu)
 
@@ -260,7 +260,7 @@
 - [ ] Brute-force cosine → HNSW ANN index (>10k embedding)
 - [ ] Husky hook fix (şu an non-blocking)
 - [ ] Light theme CSS
-- [ ] CodeRunner (G116)
+- [x] CodeRunner (G116) — CodeRunner.tsx + run_code Tauri command
 - [ ] Zero-Mock: SystemMetrics mock fallback kaldırma
 - [ ] StatusBar string parsing → structured invoke
 - [ ] Genel coverage %69 → %75+
@@ -286,8 +286,8 @@
 
 | Metrik | Değer | Hedef |
 |--------|-------|-------|
-| Rust test sayısı | 437 (320 unit + 117 integration) | 500+ |
-| React test sayısı | 228 (35 dosya) | 300+ |
+| Rust test sayısı | 441 (324 unit + 117 integration) | 500+ |
+| React test sayısı | 232 (36 dosya) | 300+ |
 | Coverage (stmts) | %69 | %75+ |
 | E2E test | 5 Playwright | 10+ |
 | `cargo check` | 0 error | 0 |
@@ -303,6 +303,7 @@
 - [x] **v0.2.1**: RAG Pipeline + UI Wiring
 - [x] **v0.2.2**: Milestone 1 rötuşlar
 - [x] **v0.2.3**: Milestone 2: Voice Assistant (Whisper STT, ElevenLabs TTS, queue, dialog, profiles, i18n)
-- [ ] **v0.3.0**: Voice Assistant (Whisper, ElevenLabs, ses kuyruğu, diyalog)
-- [ ] **v0.4.0**: HW Panel + Market Risk + CLI Chat
+- [x] **v0.2.4**: Strategic Query fix + CodeRunner test + Skill Market/Versioning
+- [ ] **v0.3.0**: HW Panel + Market Risk Manager + CLI Chat REPL
+- [ ] **v0.4.0**: Security Test Suite + Load Test + E2E 10+
 - [ ] **v1.0.0**: Tam Otonom Yapay Zeka Operatörü (test coverage %75+, load test, güvenlik audit)

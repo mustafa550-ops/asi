@@ -19,6 +19,10 @@ pub struct Skill {
     pub active: bool,
     pub version: i32,
     pub created_at: String,
+    pub category: String,
+    pub tags: Vec<String>,
+    pub rating: f64,
+    pub rating_count: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -1,6 +1,7 @@
 pub mod ws;
 pub mod indicators;
 pub mod signal;
+pub mod strategic_query;
 
 use super::{Agent, AgentContext};
 use std::sync::Mutex;
