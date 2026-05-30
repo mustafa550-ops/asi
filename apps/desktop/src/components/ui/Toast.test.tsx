@@ -19,14 +19,20 @@ describe("ToastContainer", () => {
 
   it("displays toast when toast() is called", () => {
     render(<ToastContainer />);
-    act(() => { toast("Başarılı", "success"); });
+    act(() => {
+      toast("Başarılı", "success");
+    });
     expect(screen.getByText("Başarılı")).toBeInTheDocument();
     expect(screen.getByText("Başarılı")).toHaveClass("ui-toast-success");
   });
 
   it("displays multiple toasts", () => {
     render(<ToastContainer />);
-    act(() => { toast("Bir"); toast("İki"); toast("Üç"); });
+    act(() => {
+      toast("Bir");
+      toast("İki");
+      toast("Üç");
+    });
     expect(screen.getByText("Bir")).toBeInTheDocument();
     expect(screen.getByText("İki")).toBeInTheDocument();
     expect(screen.getByText("Üç")).toBeInTheDocument();
@@ -34,15 +40,21 @@ describe("ToastContainer", () => {
 
   it("applies variant classes", () => {
     render(<ToastContainer />);
-    act(() => { toast("Hata", "error"); });
+    act(() => {
+      toast("Hata", "error");
+    });
     expect(screen.getByText("Hata")).toHaveClass("ui-toast-error");
-    act(() => { toast("Bilgi", "info"); });
+    act(() => {
+      toast("Bilgi", "info");
+    });
     expect(screen.getByText("Bilgi")).toHaveClass("ui-toast-info");
   });
 
   it("defaults to info variant", () => {
     render(<ToastContainer />);
-    act(() => { toast("Varsayılan"); });
+    act(() => {
+      toast("Varsayılan");
+    });
     expect(screen.getByText("Varsayılan")).toHaveClass("ui-toast-info");
   });
 
@@ -53,9 +65,13 @@ describe("ToastContainer", () => {
 
   it("removes toast after 4 seconds", async () => {
     render(<ToastContainer />);
-    act(() => { toast("Geçici"); });
+    act(() => {
+      toast("Geçici");
+    });
     expect(screen.getByText("Geçici")).toBeInTheDocument();
-    act(() => { vi.advanceTimersByTime(4000); });
+    act(() => {
+      vi.advanceTimersByTime(4000);
+    });
     expect(screen.queryByText("Geçici")).not.toBeInTheDocument();
   });
 });

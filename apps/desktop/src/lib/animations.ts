@@ -17,7 +17,10 @@ export function staggerIn(elements: HTMLElement[], delay = 50) {
   });
 }
 
-export function slideIn(element: HTMLElement, direction: "left" | "right" = "left") {
+export function slideIn(
+  element: HTMLElement,
+  direction: "left" | "right" = "left",
+) {
   const offset = direction === "left" ? -20 : 20;
   element.style.opacity = "0";
   element.style.transform = `translateX(${offset}px)`;

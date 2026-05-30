@@ -26,7 +26,9 @@ export function ToastContainer() {
 
   useEffect(() => {
     listeners.push(add);
-    return () => { listeners.splice(listeners.indexOf(add), 1); };
+    return () => {
+      listeners.splice(listeners.indexOf(add), 1);
+    };
   }, [add]);
 
   return (

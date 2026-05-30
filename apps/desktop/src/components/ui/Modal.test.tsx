@@ -7,19 +7,29 @@ describe("Modal", () => {
     const { container } = render(
       <Modal open={false} onClose={() => {}} title="Test">
         İçerik
-      </Modal>
+      </Modal>,
     );
-    expect(container.querySelector(".ui-modal-overlay")).not.toBeInTheDocument();
+    expect(
+      container.querySelector(".ui-modal-overlay"),
+    ).not.toBeInTheDocument();
   });
 
   it("renders content when open is true", () => {
-    render(<Modal open={true} onClose={() => {}} title="Test">İçerik</Modal>);
+    render(
+      <Modal open={true} onClose={() => {}} title="Test">
+        İçerik
+      </Modal>,
+    );
     expect(screen.getByText("İçerik")).toBeInTheDocument();
     expect(screen.getByText("Test")).toBeInTheDocument();
   });
 
   it("renders dialog with correct aria attributes", () => {
-    render(<Modal open={true} onClose={() => {}} title="Uyarı">İçerik</Modal>);
+    render(
+      <Modal open={true} onClose={() => {}} title="Uyarı">
+        İçerik
+      </Modal>,
+    );
     const dialog = screen.getByRole("dialog");
     expect(dialog).toHaveAttribute("aria-modal", "true");
     expect(dialog).toHaveAttribute("aria-label", "Uyarı");
@@ -27,27 +37,43 @@ describe("Modal", () => {
 
   it("calls onClose when overlay clicked", () => {
     const onClose = vi.fn();
-    render(<Modal open={true} onClose={onClose} title="Test">İçerik</Modal>);
+    render(
+      <Modal open={true} onClose={onClose} title="Test">
+        İçerik
+      </Modal>,
+    );
     fireEvent.click(screen.getByRole("dialog"));
     expect(onClose).toHaveBeenCalledOnce();
   });
 
   it("does not call onClose when modal body clicked", () => {
     const onClose = vi.fn();
-    render(<Modal open={true} onClose={onClose} title="Test">İçerik</Modal>);
+    render(
+      <Modal open={true} onClose={onClose} title="Test">
+        İçerik
+      </Modal>,
+    );
     fireEvent.click(screen.getByText("İçerik"));
     expect(onClose).not.toHaveBeenCalled();
   });
 
   it("calls onClose on Escape key", () => {
     const onClose = vi.fn();
-    render(<Modal open={true} onClose={onClose} title="Test">İçerik</Modal>);
+    render(
+      <Modal open={true} onClose={onClose} title="Test">
+        İçerik
+      </Modal>,
+    );
     fireEvent.keyDown(document, { key: "Escape" });
     expect(onClose).toHaveBeenCalledOnce();
   });
 
   it("renders close button with aria-label", () => {
-    render(<Modal open={true} onClose={() => {}} title="Test">İçerik</Modal>);
+    render(
+      <Modal open={true} onClose={() => {}} title="Test">
+        İçerik
+      </Modal>,
+    );
     const closeBtn = screen.getByLabelText("Kapat");
     expect(closeBtn).toBeInTheDocument();
     fireEvent.click(closeBtn);
@@ -57,7 +83,9 @@ describe("Modal", () => {
     const addSpy = vi.spyOn(document, "addEventListener");
     const removeSpy = vi.spyOn(document, "removeEventListener");
     const { unmount } = render(
-      <Modal open={true} onClose={() => {}} title="Test">İçerik</Modal>
+      <Modal open={true} onClose={() => {}} title="Test">
+        İçerik
+      </Modal>,
     );
     expect(addSpy).toHaveBeenCalledWith("keydown", expect.any(Function));
     unmount();

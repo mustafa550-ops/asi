@@ -11,7 +11,10 @@ describe("chatStore", () => {
   beforeEach(() => {
     useChatStore.setState({
       messages: [
-        { role: "adler", content: "ADLER ASI hazır. Nasıl yardımcı olabilirim?" },
+        {
+          role: "adler",
+          content: "ADLER ASI hazır. Nasıl yardımcı olabilirim?",
+        },
       ],
       input: "",
       loading: false,

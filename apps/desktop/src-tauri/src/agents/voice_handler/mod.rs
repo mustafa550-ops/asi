@@ -2,6 +2,8 @@ pub mod audio;
 pub mod wake_word;
 pub mod stt;
 pub mod tts;
+pub mod queue;
+pub mod dialog;
 
 use super::{Agent, AgentContext};
 use std::sync::Arc;
@@ -23,12 +25,8 @@ impl VoiceHandler {
             return Ok(());
         }
 
-        wake_word::init_wake_word()?;
-        if !model_path.is_empty() {
-            stt::init_stt(model_path)?;
-        } else {
-            log::warn!("Vosk model yolu ayarlanmamis — STT ses tanima pasif");
-        }
+        let stt_fallback = stt::create_default_stt(model_path);
+        wake_word::init_wake_word(stt_fallback)?;
         self.active.store(true, Ordering::Relaxed);
         let running = Arc::new(AtomicBool::new(true));
         let r = Arc::clone(&running);

@@ -21,11 +21,16 @@ export function EventStream() {
       };
       setEvents((prev) => [evt, ...prev].slice(0, 100));
     } catch {
-      setEvents((prev) => [{
-        time: new Date().toLocaleTimeString(),
-        type: "raw",
-        detail: payload,
-      }, ...prev].slice(0, 100));
+      setEvents((prev) =>
+        [
+          {
+            time: new Date().toLocaleTimeString(),
+            type: "raw",
+            detail: payload,
+          },
+          ...prev,
+        ].slice(0, 100),
+      );
     }
   }, []);
 
@@ -51,7 +56,9 @@ export function EventStream() {
         />
       </div>
       <div className="event-list">
-        {filtered.length === 0 && <p className="event-empty">Henüz olay yok.</p>}
+        {filtered.length === 0 && (
+          <p className="event-empty">Henüz olay yok.</p>
+        )}
         {filtered.map((e, i) => (
           <div key={i} className={`event-row event-${e.type}`}>
             <span className="event-time">{e.time}</span>

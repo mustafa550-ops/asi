@@ -8,7 +8,8 @@ interface TooltipProps {
 export function Tooltip({ text, children }: TooltipProps) {
   const [visible, setVisible] = useState(false);
   return (
-    <span className="ui-tooltip-wrapper"
+    <span
+      className="ui-tooltip-wrapper"
       onMouseEnter={() => setVisible(true)}
       onMouseLeave={() => setVisible(false)}
       onFocus={() => setVisible(true)}

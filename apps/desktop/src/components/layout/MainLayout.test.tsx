@@ -3,7 +3,13 @@ import { render, screen } from "../../test/test-utils";
 import { MainLayout } from "./MainLayout";
 
 vi.mock("./Sidebar", () => ({
-  Sidebar: ({ items, activeTab }: { items: { id: string; label: string }[]; activeTab: string }) => (
+  Sidebar: ({
+    items,
+    activeTab,
+  }: {
+    items: { id: string; label: string }[];
+    activeTab: string;
+  }) => (
     <div data-testid="mock-sidebar">
       <span data-testid="sidebar-active">{activeTab}</span>
       <span data-testid="sidebar-count">{items.length}</span>
@@ -28,37 +34,65 @@ describe("MainLayout", () => {
   const noop = () => {};
 
   it("renders sidebar with correct active tab", () => {
-    render(<MainLayout activeTab="chat" onTabChange={noop}>child</MainLayout>);
+    render(
+      <MainLayout activeTab="chat" onTabChange={noop}>
+        child
+      </MainLayout>,
+    );
     expect(screen.getByTestId("sidebar-active")).toHaveTextContent("chat");
   });
 
   it("renders header with current tab label", () => {
-    render(<MainLayout activeTab="chat" onTabChange={noop}>child</MainLayout>);
+    render(
+      <MainLayout activeTab="chat" onTabChange={noop}>
+        child
+      </MainLayout>,
+    );
     expect(screen.getByTestId("header-title")).toHaveTextContent("Sohbet");
   });
 
   it("renders header with ADLER label for unknown tab", () => {
-    render(<MainLayout activeTab="unknown" onTabChange={noop}>child</MainLayout>);
+    render(
+      <MainLayout activeTab="unknown" onTabChange={noop}>
+        child
+      </MainLayout>,
+    );
     expect(screen.getByTestId("header-title")).toHaveTextContent("ADLER ASI");
   });
 
   it("renders header subtitle", () => {
-    render(<MainLayout activeTab="chat" onTabChange={noop}>child</MainLayout>);
+    render(
+      <MainLayout activeTab="chat" onTabChange={noop}>
+        child
+      </MainLayout>,
+    );
     expect(screen.getByTestId("header-subtitle")).toHaveTextContent("Otonom");
   });
 
   it("renders children in main content", () => {
-    render(<MainLayout activeTab="dashboard" onTabChange={noop}><p>test child</p></MainLayout>);
+    render(
+      <MainLayout activeTab="dashboard" onTabChange={noop}>
+        <p>test child</p>
+      </MainLayout>,
+    );
     expect(screen.getByRole("main")).toHaveTextContent("test child");
   });
 
   it("renders status bar", () => {
-    render(<MainLayout activeTab="chat" onTabChange={noop}>child</MainLayout>);
+    render(
+      <MainLayout activeTab="chat" onTabChange={noop}>
+        child
+      </MainLayout>,
+    );
     expect(screen.getByTestId("mock-statusbar")).toBeInTheDocument();
   });
 
   it("passes 5 nav items to sidebar", () => {
-    render(<MainLayout activeTab="chat" onTabChange={noop}>child</MainLayout>);
+    render(
+      <MainLayout activeTab="chat" onTabChange={noop}>
+        child
+      </MainLayout>,
+    );
     expect(screen.getByTestId("sidebar-count")).toHaveTextContent("5");
   });
 });

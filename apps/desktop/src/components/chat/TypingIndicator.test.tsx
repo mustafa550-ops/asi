@@ -10,7 +10,10 @@ describe("TypingIndicator", () => {
 
   it("has aria-label indicating thinking state", () => {
     render(<TypingIndicator />);
-    expect(screen.getByRole("status")).toHaveAttribute("aria-label", "ADLER düşünüyor");
+    expect(screen.getByRole("status")).toHaveAttribute(
+      "aria-label",
+      "ADLER düşünüyor",
+    );
   });
 
   it("shows thinking text", () => {

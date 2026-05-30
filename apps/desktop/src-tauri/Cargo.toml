@@ -7,6 +7,7 @@ description = "ADLER ASI - Autonomous Digital Operator"
 [features]
 default = ["voice"]
 voice = ["dep:vosk"]
+whisper = []
 
 [lib]
 name = "adler_asi_lib"
@@ -71,6 +72,9 @@ ring = "0.17"
 
 # Voice: audio capture
 cpal = "0.15"
+
+# Voice: audio playback
+rodio = "0.20"
 
 # Voice: offline STT (Vosk) — opsiyonel, voice feature ile
 vosk = { version = "0.3", optional = true }

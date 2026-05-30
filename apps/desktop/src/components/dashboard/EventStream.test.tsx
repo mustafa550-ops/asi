@@ -25,6 +25,9 @@ describe("EventStream", () => {
 
   it("renders aria-label on log", () => {
     render(<EventStream />);
-    expect(screen.getByRole("log")).toHaveAttribute("aria-label", "Sistem olayları");
+    expect(screen.getByRole("log")).toHaveAttribute(
+      "aria-label",
+      "Sistem olayları",
+    );
   });
 });

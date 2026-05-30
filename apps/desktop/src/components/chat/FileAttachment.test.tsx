@@ -3,10 +3,14 @@ import { render, screen, fireEvent } from "../../test/test-utils";
 import { FileAttachment } from "./FileAttachment";
 
 const mockToast = vi.fn();
-vi.mock("../ui/Toast", () => ({ toast: (...args: unknown[]) => mockToast(...args) }));
+vi.mock("../ui/Toast", () => ({
+  toast: (...args: unknown[]) => mockToast(...args),
+}));
 
 describe("FileAttachment", () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
   it("renders attach button", () => {
     render(<FileAttachment onAttach={vi.fn()} />);
@@ -17,7 +21,10 @@ describe("FileAttachment", () => {
     render(<FileAttachment onAttach={vi.fn()} />);
     const input = document.querySelector('input[type="file"]');
     expect(input).toBeInTheDocument();
-    expect(input).toHaveAttribute("accept", ".md,.txt,.json,.csv,.yaml,.yml,.toml,.rs,.ts,.tsx,.py,.js,.html,.css,.xml,.sql");
+    expect(input).toHaveAttribute(
+      "accept",
+      ".md,.txt,.json,.csv,.yaml,.yml,.toml,.rs,.ts,.tsx,.py,.js,.html,.css,.xml,.sql",
+    );
     expect(input).toHaveAttribute("hidden");
   });
 
@@ -42,7 +49,9 @@ describe("FileAttachment", () => {
     const { container } = render(<FileAttachment onAttach={onAttach} />);
     const dropZone = container.querySelector(".file-attach")!;
     const file = new File(["test"], "test.md", { type: "text/markdown" });
-    Object.defineProperty(file, "text", { value: () => Promise.resolve("test") });
+    Object.defineProperty(file, "text", {
+      value: () => Promise.resolve("test"),
+    });
     fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
     expect(dropZone).not.toHaveClass("file-attach-dragging");
   });

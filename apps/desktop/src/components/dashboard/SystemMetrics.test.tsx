@@ -28,7 +28,10 @@ describe("SystemMetrics", () => {
   it("renders region with accessible label", () => {
     mockInvoke.mockResolvedValue("sistem durumu");
     render(<SystemMetrics />);
-    expect(screen.getByRole("region")).toHaveAttribute("aria-label", "Sistem metrikleri");
+    expect(screen.getByRole("region")).toHaveAttribute(
+      "aria-label",
+      "Sistem metrikleri",
+    );
   });
 
   it("renders heading", () => {

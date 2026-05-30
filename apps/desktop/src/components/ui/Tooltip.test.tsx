@@ -36,7 +36,10 @@ describe("Tooltip", () => {
 
   it("sets aria-label to tooltip text", () => {
     render(<Tooltip text="aciklama">Element</Tooltip>);
-    expect(screen.getByRole("tooltip")).toHaveAttribute("aria-label", "aciklama");
+    expect(screen.getByRole("tooltip")).toHaveAttribute(
+      "aria-label",
+      "aciklama",
+    );
   });
 
   it("is focusable via tabIndex 0", () => {

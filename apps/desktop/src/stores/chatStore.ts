@@ -47,5 +47,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   setInput: (v: string) => set({ input: v }),
-  addMessage: (role, content) => set((s) => ({ messages: [...s.messages, { role, content }] })),
+  addMessage: (role, content) =>
+    set((s) => ({ messages: [...s.messages, { role, content }] })),
 }));

@@ -18,13 +18,17 @@ describe("ProactiveAlert", () => {
 
   it("renders nothing when alerts empty", () => {
     const { container } = render(<ProactiveAlert />);
-    expect(container.querySelector(".proactive-alerts")).not.toBeInTheDocument();
+    expect(
+      container.querySelector(".proactive-alerts"),
+    ).not.toBeInTheDocument();
   });
 
   it("uses aria-live assertive", () => {
     const { container } = render(<ProactiveAlert />);
     act(() => {
-      const event = new CustomEvent("tauri-event", { detail: { event: "proactive-alert", payload: "test" } });
+      const event = new CustomEvent("tauri-event", {
+        detail: { event: "proactive-alert", payload: "test" },
+      });
       window.dispatchEvent(event);
     });
   });

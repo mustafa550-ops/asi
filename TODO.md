@@ -1,7 +1,7 @@
 # ADLER ASI — Yapılacaklar Listesi
 
 > **Son güncelleme:** 2026-05-30
-> **Mevcut versiyon:** 0.2.2 (Alpha - Milestone 1 rötuşlar)
+> **Mevcut versiyon:** 0.2.3 (Alpha - Milestone 2: Voice Assistant)
 > **Durum:** Alpha — ~%87 komple (260/300 görev tamam)
 
 ---
@@ -152,18 +152,18 @@
 - [x] Wake word algılama ("adler", "hey adler")
 - [x] Ses kaydı (cpal ile PCM capture, noise gate)
 - [x] STT Vosk (offline speech-to-text, Türkçe/İngilizce)
-- [x] TTS 3-kademeli fallback (espeak-ng → supertonic API → sine-wave WAV)
+- [x] TTS 4-kademeli fallback (espeak-ng → supertonic → ElevenLabs → sine-wave)
 - [x] Voice Handler ajanı (Agent trait, start/stop listener)
 - [x] Voice Assistant UI (full-screen overlay, waveform, FAB)
-- [ ] Whisper STT entegrasyonu (whisper.cpp)
-- [ ] STT fallback (Vosk → Whisper)
-- [ ] ElevenLabs TTS fallback
-- [ ] Ses kuyruğu yöneticisi (priority, interrupt)
-- [ ] Gerçek zamanlı ses çıkışı (şu an WAV dosyası yazıyor)
-- [ ] Diyalog yöneticisi (turn-taking, barge-in)
-- [ ] Ses profilleri (hız/ton/aksan)
+- [x] Whisper STT entegrasyonu (whisper.cpp subprocess, SttEngine trait)
+- [x] STT fallback (Vosk → Whisper, SttFallback chain)
+- [x] ElevenLabs TTS (reqwest API, xi-api-key env)
+- [x] Ses kuyruğu yöneticisi (Priority High/Normal/Low, interrupt)
+- [x] Gerçek zamanlı ses çıkışı (rodio/cpal playback modülü)
+- [x] Diyalog yöneticisi (turn-taking FSM, barge-in)
+- [x] Ses profilleri (Hızlı/Sakin/Teknik/Varsayılan, TtsParams)
 - [ ] Gürültü engelleme (RNNoise/speexdsp)
-- [ ] Çoklu dil sesli destek
+- [x] Çoklu dil sesli destek (TR/EN detect, aynı dilde TTS)
 
 ### Phase 13 — Wasm Sandbox & Güvenlik (G236-G250)
 - [x] Wasmtime runtime kurulumu
@@ -286,7 +286,7 @@
 
 | Metrik | Değer | Hedef |
 |--------|-------|-------|
-| Rust test sayısı | 402 (285 unit + 117 integration) | 500+ |
+| Rust test sayısı | 437 (320 unit + 117 integration) | 500+ |
 | React test sayısı | 228 (35 dosya) | 300+ |
 | Coverage (stmts) | %69 | %75+ |
 | E2E test | 5 Playwright | 10+ |
@@ -301,7 +301,8 @@
 - [x] **v0.1.0**: İlk iskelet
 - [x] **v0.2.0**: Headless Core + Tauri Bridge
 - [x] **v0.2.1**: RAG Pipeline + UI Wiring
-- [x] **v0.2.2**: Milestone 1 rötuşlar (şu an)
+- [x] **v0.2.2**: Milestone 1 rötuşlar
+- [x] **v0.2.3**: Milestone 2: Voice Assistant (Whisper STT, ElevenLabs TTS, queue, dialog, profiles, i18n)
 - [ ] **v0.3.0**: Voice Assistant (Whisper, ElevenLabs, ses kuyruğu, diyalog)
 - [ ] **v0.4.0**: HW Panel + Market Risk + CLI Chat
 - [ ] **v1.0.0**: Tam Otonom Yapay Zeka Operatörü (test coverage %75+, load test, güvenlik audit)

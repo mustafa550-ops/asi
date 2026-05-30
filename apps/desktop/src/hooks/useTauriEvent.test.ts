@@ -5,7 +5,9 @@ import { useTauriEvent } from "./useTauriEvent";
 describe("useTauriEvent", () => {
   it("does not crash outside Tauri environment", () => {
     const cb = vi.fn();
-    expect(() => renderHook(() => useTauriEvent("test-event", cb))).not.toThrow();
+    expect(() =>
+      renderHook(() => useTauriEvent("test-event", cb)),
+    ).not.toThrow();
   });
 
   it("does not call callback outside Tauri", () => {

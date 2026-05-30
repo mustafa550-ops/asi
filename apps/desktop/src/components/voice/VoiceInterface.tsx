@@ -6,7 +6,13 @@ interface VoiceInterfaceProps {
 }
 
 export default function VoiceInterface({ onExpand }: VoiceInterfaceProps) {
-  const { isListening, isProcessing, transcript, startListening, stopListening } = useVoiceStore();
+  const {
+    isListening,
+    isProcessing,
+    transcript,
+    startListening,
+    stopListening,
+  } = useVoiceStore();
 
   const handleToggle = () => {
     if (isListening) {
@@ -28,7 +34,7 @@ export default function VoiceInterface({ onExpand }: VoiceInterfaceProps) {
       )}
 
       {/* Floating Mikrofon Butonu */}
-      <button 
+      <button
         className={`voice-fab ${isListening ? "listening" : ""} ${isProcessing ? "processing" : ""}`}
         onClick={handleToggle}
         title={isListening ? "Dinlemeyi Durdur" : "Sesi Etkinleştir"}
@@ -44,7 +50,12 @@ export default function VoiceInterface({ onExpand }: VoiceInterfaceProps) {
 
       {/* Tam ekran butonu */}
       {onExpand && (
-        <button className="voice-expand-btn" onClick={onExpand} title="Tam Ekran" aria-label="Tam ekran sesli asistan">
+        <button
+          className="voice-expand-btn"
+          onClick={onExpand}
+          title="Tam Ekran"
+          aria-label="Tam ekran sesli asistan"
+        >
           <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
             <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" />
           </svg>
@@ -53,9 +64,7 @@ export default function VoiceInterface({ onExpand }: VoiceInterfaceProps) {
 
       {/* Metin Dökümü */}
       {transcript && (
-        <div className="voice-transcript-bubble">
-          {transcript}
-        </div>
+        <div className="voice-transcript-bubble">{transcript}</div>
       )}
     </div>
   );

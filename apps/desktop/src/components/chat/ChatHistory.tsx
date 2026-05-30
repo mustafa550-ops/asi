@@ -11,11 +11,20 @@ interface ChatHistoryProps {
   onDelete: (id: string) => void;
 }
 
-export function ChatHistory({ sessions, activeId, onSelect, onDelete }: ChatHistoryProps) {
+export function ChatHistory({
+  sessions,
+  activeId,
+  onSelect,
+  onDelete,
+}: ChatHistoryProps) {
   if (sessions.length === 0) return null;
 
   return (
-    <div className="chat-session-list" role="listbox" aria-label="Sohbet geçmişi">
+    <div
+      className="chat-session-list"
+      role="listbox"
+      aria-label="Sohbet geçmişi"
+    >
       {sessions.map((s) => (
         <div
           key={s.id}
@@ -25,11 +34,16 @@ export function ChatHistory({ sessions, activeId, onSelect, onDelete }: ChatHist
         >
           <div className="chat-session-title" onClick={() => onSelect(s.id)}>
             <span>{s.title}</span>
-            <span style={{ fontSize: "0.7rem", color: "#8b949e" }}>{s.date}</span>
+            <span style={{ fontSize: "0.7rem", color: "#8b949e" }}>
+              {s.date}
+            </span>
           </div>
           <button
             className="chat-session-delete"
-            onClick={(e) => { e.stopPropagation(); onDelete(s.id); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(s.id);
+            }}
             aria-label={`${s.title} sil`}
             title="Sil"
           >

@@ -30,7 +30,7 @@ export default function ApprovalPanel({ onResult }: ApprovalPanelProps) {
     try {
       const result = await invoke<string>(
         action === "approve" ? "approve_action" : "reject_action",
-        { id }
+        { id },
       );
       setApprovals((p) => p.filter((a) => a.id !== id));
       onResult?.(action, result);
@@ -46,11 +46,23 @@ export default function ApprovalPanel({ onResult }: ApprovalPanelProps) {
       <div className="approval-list">
         {approvals.map((a) => (
           <div key={a.id} className="approval-card">
-            <p><strong>Görev:</strong> {a.task}</p>
+            <p>
+              <strong>Görev:</strong> {a.task}
+            </p>
             <pre className="approval-summary">{a.summary}</pre>
             <div className="approval-buttons">
-              <button onClick={() => respond(a.id, "approve")} className="btn-approve">Onayla</button>
-              <button onClick={() => respond(a.id, "reject")} className="btn-reject">Reddet</button>
+              <button
+                onClick={() => respond(a.id, "approve")}
+                className="btn-approve"
+              >
+                Onayla
+              </button>
+              <button
+                onClick={() => respond(a.id, "reject")}
+                className="btn-reject"
+              >
+                Reddet
+              </button>
             </div>
           </div>
         ))}

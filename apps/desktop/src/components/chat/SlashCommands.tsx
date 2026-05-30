@@ -15,18 +15,35 @@ const COMMANDS = [
   { cmd: "/yeteneek", hint: "Yetenek yönetimi" },
 ];
 
-export function SlashCommands({ input, onSelect, onClose }: SlashCommandsProps) {
+export function SlashCommands({
+  input,
+  onSelect,
+  onClose,
+}: SlashCommandsProps) {
   const [selectedIdx, setSelectedIdx] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
 
-  const filtered = COMMANDS.filter((c) => c.cmd.startsWith(input.toLowerCase()));
+  const filtered = COMMANDS.filter((c) =>
+    c.cmd.startsWith(input.toLowerCase()),
+  );
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "ArrowDown") { e.preventDefault(); setSelectedIdx((i) => Math.min(i + 1, filtered.length - 1)); }
-      if (e.key === "ArrowUp") { e.preventDefault(); setSelectedIdx((i) => Math.max(i - 1, 0)); }
-      if (e.key === "Enter" && filtered[selectedIdx]) { e.preventDefault(); onSelect(filtered[selectedIdx].cmd); }
-      if (e.key === "Escape") { onClose(); }
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setSelectedIdx((i) => Math.min(i + 1, filtered.length - 1));
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setSelectedIdx((i) => Math.max(i - 1, 0));
+      }
+      if (e.key === "Enter" && filtered[selectedIdx]) {
+        e.preventDefault();
+        onSelect(filtered[selectedIdx].cmd);
+      }
+      if (e.key === "Escape") {
+        onClose();
+      }
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);

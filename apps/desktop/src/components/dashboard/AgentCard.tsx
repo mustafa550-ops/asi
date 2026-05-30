@@ -8,14 +8,23 @@ interface AgentCardProps {
   runCount?: number;
 }
 
-const STATUS_MAP: Record<string, { variant: "success" | "warning" | "error" | "info"; label: string }> = {
+const STATUS_MAP: Record<
+  string,
+  { variant: "success" | "warning" | "error" | "info"; label: string }
+> = {
   ready: { variant: "success", label: "Hazır" },
   idle: { variant: "info", label: "Boşta" },
   busy: { variant: "warning", label: "Meşgul" },
   error: { variant: "error", label: "Hata" },
 };
 
-export function AgentCard({ name, status, description, lastAction, runCount }: AgentCardProps) {
+export function AgentCard({
+  name,
+  status,
+  description,
+  lastAction,
+  runCount,
+}: AgentCardProps) {
   const s = STATUS_MAP[status] ?? STATUS_MAP.idle;
   return (
     <div className="agent-card" role="article" aria-label={`Ajan: ${name}`}>
@@ -25,8 +34,12 @@ export function AgentCard({ name, status, description, lastAction, runCount }: A
       </div>
       <p className="agent-card-desc">{description}</p>
       <div className="agent-card-meta">
-        {lastAction && <span className="agent-card-action">Son: {lastAction}</span>}
-        {runCount !== undefined && <span className="agent-card-count">{runCount} çalışma</span>}
+        {lastAction && (
+          <span className="agent-card-action">Son: {lastAction}</span>
+        )}
+        {runCount !== undefined && (
+          <span className="agent-card-count">{runCount} çalışma</span>
+        )}
       </div>
     </div>
   );

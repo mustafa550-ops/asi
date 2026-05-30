@@ -6,19 +6,20 @@ const mockSend = vi.fn();
 const mockSetInput = vi.fn();
 
 vi.mock("../../stores/chatStore", () => ({
-  useChatStore: (selector: (s: Record<string, unknown>) => unknown) => selector({
-    messages: [
-      { role: "adler", content: "ADLER ASI hazır." },
-    ],
-    input: "",
-    loading: false,
-    send: mockSend,
-    setInput: mockSetInput,
-  }),
+  useChatStore: (selector: (s: Record<string, unknown>) => unknown) =>
+    selector({
+      messages: [{ role: "adler", content: "ADLER ASI hazır." }],
+      input: "",
+      loading: false,
+      send: mockSend,
+      setInput: mockSetInput,
+    }),
 }));
 
 vi.mock("../MarkdownRenderer", () => ({
-  MarkdownRenderer: ({ content }: { content: string }) => <div data-testid="md">{content}</div>,
+  MarkdownRenderer: ({ content }: { content: string }) => (
+    <div data-testid="md">{content}</div>
+  ),
 }));
 
 vi.mock("./TypingIndicator", () => ({
@@ -38,8 +39,15 @@ vi.mock("./ContextWindow", () => ({
 }));
 
 vi.mock("./FileAttachment", () => ({
-  FileAttachment: ({ onAttach }: { onAttach: (f: { name: string }) => void }) => (
-    <button data-testid="attach" onClick={() => onAttach({ name: "test.md", size: 100, content: "test" })}>
+  FileAttachment: ({
+    onAttach,
+  }: {
+    onAttach: (f: { name: string }) => void;
+  }) => (
+    <button
+      data-testid="attach"
+      onClick={() => onAttach({ name: "test.md", size: 100, content: "test" })}
+    >
       Ekle
     </button>
   ),

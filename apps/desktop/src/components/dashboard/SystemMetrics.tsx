@@ -35,8 +35,22 @@ export function SystemMetrics() {
     return () => clearInterval(id);
   }, []);
 
-  function MetricBar({ label, value, max, color }: { label: string; value: number | null; max: number; color: string }) {
-    const unit = label.includes("CPU") ? "%" : label.includes("Bellek") ? "GB" : "sn";
+  function MetricBar({
+    label,
+    value,
+    max,
+    color,
+  }: {
+    label: string;
+    value: number | null;
+    max: number;
+    color: string;
+  }) {
+    const unit = label.includes("CPU")
+      ? "%"
+      : label.includes("Bellek")
+        ? "GB"
+        : "sn";
     const display = value !== null ? `${value.toFixed(1)}${unit}` : "--";
     const pct = value !== null ? Math.min((value / max) * 100, 100) : 0;
     return (
@@ -47,7 +61,10 @@ export function SystemMetrics() {
         </div>
         <div className="metric-track">
           {value !== null && (
-            <div className="metric-fill" style={{ width: `${pct}%`, background: color }} />
+            <div
+              className="metric-fill"
+              style={{ width: `${pct}%`, background: color }}
+            />
           )}
         </div>
       </div>
@@ -55,14 +72,28 @@ export function SystemMetrics() {
   }
 
   return (
-    <div className="system-metrics" role="region" aria-label="Sistem metrikleri">
+    <div
+      className="system-metrics"
+      role="region"
+      aria-label="Sistem metrikleri"
+    >
       <h3>
         Sistem Metrikleri
         {!connected && <span className="metric-offline-badge">çevrimdışı</span>}
       </h3>
       <MetricBar label="CPU Kullanımı" value={cpu} max={100} color="#58a6ff" />
-      <MetricBar label="Bellek Kullanımı" value={memory} max={16} color="#3fb950" />
-      <MetricBar label="Çalışma Süresi" value={uptime} max={86400} color="#d29922" />
+      <MetricBar
+        label="Bellek Kullanımı"
+        value={memory}
+        max={16}
+        color="#3fb950"
+      />
+      <MetricBar
+        label="Çalışma Süresi"
+        value={uptime}
+        max={86400}
+        color="#d29922"
+      />
     </div>
   );
 }

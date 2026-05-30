@@ -28,7 +28,7 @@ describe("Card", () => {
     render(
       <Card>
         <span data-testid="child">Nested</span>
-      </Card>
+      </Card>,
     );
     expect(screen.getByTestId("child")).toBeInTheDocument();
   });

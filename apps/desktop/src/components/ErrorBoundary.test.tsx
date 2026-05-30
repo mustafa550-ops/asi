@@ -20,7 +20,7 @@ describe("ErrorBoundary", () => {
     render(
       <ErrorBoundary>
         <div>Sağlıklı</div>
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
     expect(screen.getByText("Sağlıklı")).toBeInTheDocument();
   });
@@ -29,7 +29,7 @@ describe("ErrorBoundary", () => {
     render(
       <ErrorBoundary>
         <ProblemChild shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
     expect(screen.getByText("Bir hata oluştu")).toBeInTheDocument();
     expect(screen.getByText("Test hatası")).toBeInTheDocument();
@@ -39,7 +39,7 @@ describe("ErrorBoundary", () => {
     render(
       <ErrorBoundary>
         <ProblemChild shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
     expect(screen.getByText("Tekrar Dene")).toBeInTheDocument();
   });
@@ -48,7 +48,7 @@ describe("ErrorBoundary", () => {
     const { rerender } = render(
       <ErrorBoundary>
         <ProblemChild shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
     expect(screen.getByText("Bir hata oluştu")).toBeInTheDocument();
     fireEvent.click(screen.getByText("Tekrar Dene"));
@@ -58,7 +58,7 @@ describe("ErrorBoundary", () => {
     render(
       <ErrorBoundary fallback={<div>Özel hata</div>}>
         <ProblemChild shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
     expect(screen.getByText("Özel hata")).toBeInTheDocument();
   });
@@ -67,7 +67,7 @@ describe("ErrorBoundary", () => {
     render(
       <ErrorBoundary>
         <ProblemChild shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
     expect(screen.getByRole("alert")).toBeInTheDocument();
   });

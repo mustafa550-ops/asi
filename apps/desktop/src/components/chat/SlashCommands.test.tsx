@@ -9,7 +9,9 @@ describe("SlashCommands", () => {
   });
 
   it("renders nothing when no match", () => {
-    const { container } = render(<SlashCommands input="/xyz" onSelect={vi.fn()} onClose={vi.fn()} />);
+    const { container } = render(
+      <SlashCommands input="/xyz" onSelect={vi.fn()} onClose={vi.fn()} />,
+    );
     expect(container.innerHTML).toBe("");
   });
 

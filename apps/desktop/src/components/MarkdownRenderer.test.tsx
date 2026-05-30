@@ -10,7 +10,9 @@ describe("MarkdownRenderer", () => {
 
   it("renders bold text", () => {
     render(<MarkdownRenderer content="**kalın** metin" />);
-    expect(screen.getByText("kalın", { selector: "strong" })).toBeInTheDocument();
+    expect(
+      screen.getByText("kalın", { selector: "strong" }),
+    ).toBeInTheDocument();
   });
 
   it("renders italic text", () => {
@@ -49,13 +51,17 @@ describe("MarkdownRenderer", () => {
   });
 
   it("renders unordered list items", () => {
-    const { container } = render(<MarkdownRenderer content={"- madde 1\n- madde 2"} />);
+    const { container } = render(
+      <MarkdownRenderer content={"- madde 1\n- madde 2"} />,
+    );
     const items = container.querySelectorAll(".md-li");
     expect(items.length).toBe(2);
   });
 
   it("renders ordered list items", () => {
-    const { container } = render(<MarkdownRenderer content={"1. birinci\n2. ikinci"} />);
+    const { container } = render(
+      <MarkdownRenderer content={"1. birinci\n2. ikinci"} />,
+    );
     const items = container.querySelectorAll(".md-li");
     expect(items.length).toBe(2);
   });
@@ -64,7 +70,9 @@ describe("MarkdownRenderer", () => {
     render(<MarkdownRenderer content={"```rust\nfn main() {}\n```"} />);
     const codeBlock = document.querySelector(".md-code-block");
     expect(codeBlock).toBeInTheDocument();
-    expect(document.querySelector(".md-code")).toHaveTextContent("fn main() {}");
+    expect(document.querySelector(".md-code")).toHaveTextContent(
+      "fn main() {}",
+    );
   });
 
   it("renders code blocks with language class", () => {

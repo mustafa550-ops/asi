@@ -8,7 +8,11 @@ vi.mock("../lib/tauri", () => ({
 
 describe("voiceStore", () => {
   beforeEach(() => {
-    useVoiceStore.setState({ isListening: false, isProcessing: false, transcript: "" });
+    useVoiceStore.setState({
+      isListening: false,
+      isProcessing: false,
+      transcript: "",
+    });
     vi.clearAllMocks();
   });
 
@@ -51,7 +55,9 @@ describe("voiceStore", () => {
   it("synthesizeSpeech calls invoke with text", async () => {
     mockInvoke.mockResolvedValue(undefined);
     await useVoiceStore.getState().synthesizeSpeech("merhaba");
-    expect(mockInvoke).toHaveBeenCalledWith("synthesize_speech", { text: "merhaba" });
+    expect(mockInvoke).toHaveBeenCalledWith("synthesize_speech", {
+      text: "merhaba",
+    });
   });
 
   it("synthesizeSpeech does nothing for empty text", async () => {
@@ -61,7 +67,9 @@ describe("voiceStore", () => {
 
   it("synthesizeSpeech handles error gracefully", async () => {
     mockInvoke.mockRejectedValue(new Error("tts error"));
-    await expect(useVoiceStore.getState().synthesizeSpeech("test")).resolves.not.toThrow();
+    await expect(
+      useVoiceStore.getState().synthesizeSpeech("test"),
+    ).resolves.not.toThrow();
   });
 
   it("setTranscript updates transcript", () => {

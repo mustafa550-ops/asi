@@ -1,7 +1,10 @@
 import { useMemo } from "react";
 
 function escapeHtml(text: string): string {
-  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 function renderInline(text: string): string {
@@ -22,7 +25,9 @@ function renderMarkdown(md: string): string {
   for (const line of lines) {
     if (line.startsWith("```")) {
       if (inCode) {
-        html.push(`<pre class="md-code-block"><code class="md-code lang-${escapeHtml(codeLang)}">${escapeHtml(codeBuf.join("\n"))}</code></pre>`);
+        html.push(
+          `<pre class="md-code-block"><code class="md-code lang-${escapeHtml(codeLang)}">${escapeHtml(codeBuf.join("\n"))}</code></pre>`,
+        );
         codeBuf = [];
         inCode = false;
         codeLang = "";
@@ -37,15 +42,25 @@ function renderMarkdown(md: string): string {
       continue;
     }
     if (line.startsWith("### ")) {
-      html.push(`<h3 class="md-h3">${renderInline(escapeHtml(line.slice(4)))}</h3>`);
+      html.push(
+        `<h3 class="md-h3">${renderInline(escapeHtml(line.slice(4)))}</h3>`,
+      );
     } else if (line.startsWith("## ")) {
-      html.push(`<h2 class="md-h2">${renderInline(escapeHtml(line.slice(3)))}</h2>`);
+      html.push(
+        `<h2 class="md-h2">${renderInline(escapeHtml(line.slice(3)))}</h2>`,
+      );
     } else if (line.startsWith("# ")) {
-      html.push(`<h1 class="md-h1">${renderInline(escapeHtml(line.slice(2)))}</h1>`);
+      html.push(
+        `<h1 class="md-h1">${renderInline(escapeHtml(line.slice(2)))}</h1>`,
+      );
     } else if (line.startsWith("- ") || line.startsWith("* ")) {
-      html.push(`<li class="md-li">${renderInline(escapeHtml(line.slice(2)))}</li>`);
+      html.push(
+        `<li class="md-li">${renderInline(escapeHtml(line.slice(2)))}</li>`,
+      );
     } else if (/^\d+\.\s/.test(line)) {
-      html.push(`<li class="md-li">${renderInline(escapeHtml(line.replace(/^\d+\.\s/, "")))}</li>`);
+      html.push(
+        `<li class="md-li">${renderInline(escapeHtml(line.replace(/^\d+\.\s/, "")))}</li>`,
+      );
     } else if (line.trim() === "") {
       html.push("</ul><br/>");
     } else {
@@ -53,7 +68,9 @@ function renderMarkdown(md: string): string {
     }
   }
   if (inCode) {
-    html.push(`<pre class="md-code-block"><code>${escapeHtml(codeBuf.join("\n"))}</code></pre>`);
+    html.push(
+      `<pre class="md-code-block"><code>${escapeHtml(codeBuf.join("\n"))}</code></pre>`,
+    );
   }
   return html.join("\n");
 }
@@ -64,5 +81,7 @@ interface MarkdownRendererProps {
 
 export function MarkdownRenderer({ content }: MarkdownRendererProps) {
   const html = useMemo(() => renderMarkdown(content), [content]);
-  return <div className="md-render" dangerouslySetInnerHTML={{ __html: html }} />;
+  return (
+    <div className="md-render" dangerouslySetInnerHTML={{ __html: html }} />
+  );
 }

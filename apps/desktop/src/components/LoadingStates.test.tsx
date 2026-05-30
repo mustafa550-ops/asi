@@ -17,7 +17,10 @@ describe("Skeleton", () => {
 
   it("is hidden from accessibility tree", () => {
     const { container } = render(<Skeleton />);
-    expect(container.querySelector(".skeleton")).toHaveAttribute("aria-hidden", "true");
+    expect(container.querySelector(".skeleton")).toHaveAttribute(
+      "aria-hidden",
+      "true",
+    );
   });
 });
 
@@ -34,7 +37,10 @@ describe("LoadingSpinner", () => {
 
   it("has status role with aria-label", () => {
     render(<LoadingSpinner text="Yükleniyor..." />);
-    expect(screen.getByRole("status")).toHaveAttribute("aria-label", "Yükleniyor...");
+    expect(screen.getByRole("status")).toHaveAttribute(
+      "aria-label",
+      "Yükleniyor...",
+    );
   });
 
   it("renders spinner element", () => {

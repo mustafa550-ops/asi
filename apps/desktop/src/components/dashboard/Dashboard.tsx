@@ -37,7 +37,12 @@ export default function Dashboard() {
           <Card title="Ajan Durumu">
             <div className="agent-grid">
               {agents.map((a) => (
-                <AgentCard key={a.name} name={a.name} status={a.status as "ready" | "idle" | "error"} description={a.description} />
+                <AgentCard
+                  key={a.name}
+                  name={a.name}
+                  status={a.status as "ready" | "idle" | "error"}
+                  description={a.description}
+                />
               ))}
             </div>
           </Card>

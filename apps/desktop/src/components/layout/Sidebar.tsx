@@ -15,12 +15,27 @@ interface SidebarProps {
   children?: ReactNode;
 }
 
-export function Sidebar({ items, activeTab, onTabChange, collapsed, onToggle, children }: SidebarProps) {
+export function Sidebar({
+  items,
+  activeTab,
+  onTabChange,
+  collapsed,
+  onToggle,
+  children,
+}: SidebarProps) {
   return (
-    <aside className={`layout-sidebar ${collapsed ? "collapsed" : ""}`} role="navigation" aria-label="Ana navigasyon">
+    <aside
+      className={`layout-sidebar ${collapsed ? "collapsed" : ""}`}
+      role="navigation"
+      aria-label="Ana navigasyon"
+    >
       <div className="sidebar-header">
         {!collapsed && <span className="sidebar-logo">ADLER</span>}
-        <button className="sidebar-toggle" onClick={onToggle} aria-label={collapsed ? "Genişlet" : "Daralt"}>
+        <button
+          className="sidebar-toggle"
+          onClick={onToggle}
+          aria-label={collapsed ? "Genişlet" : "Daralt"}
+        >
           {collapsed ? "☰" : "✕"}
         </button>
       </div>

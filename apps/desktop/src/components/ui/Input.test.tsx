@@ -26,7 +26,9 @@ describe("Input", () => {
   it("fires onChange", () => {
     const onChange = vi.fn();
     render(<Input onChange={onChange} />);
-    fireEvent.change(screen.getByRole("textbox"), { target: { value: "test" } });
+    fireEvent.change(screen.getByRole("textbox"), {
+      target: { value: "test" },
+    });
     expect(onChange).toHaveBeenCalled();
   });
 

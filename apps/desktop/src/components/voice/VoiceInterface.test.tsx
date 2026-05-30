@@ -64,6 +64,8 @@ describe("VoiceInterface", () => {
   it("applies active class when listening", () => {
     mockState.isListening = true;
     const { container } = render(<VoiceInterface />);
-    expect(container.querySelector(".voice-interface-wrapper")).toHaveClass("active");
+    expect(container.querySelector(".voice-interface-wrapper")).toHaveClass(
+      "active",
+    );
   });
 });

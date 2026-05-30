@@ -20,7 +20,11 @@ describe("Header", () => {
   });
 
   it("renders children in actions area", () => {
-    render(<Header title="Sohbet"><button>Eylem</button></Header>);
+    render(
+      <Header title="Sohbet">
+        <button>Eylem</button>
+      </Header>,
+    );
     expect(screen.getByText("Eylem")).toBeInTheDocument();
   });
 

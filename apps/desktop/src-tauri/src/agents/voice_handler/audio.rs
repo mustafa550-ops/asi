@@ -56,6 +56,49 @@ pub fn is_recording() -> bool {
     RECORDING.load(Ordering::Relaxed)
 }
 
+pub mod playback {
+    use rodio::{Decoder, OutputStream, Sink};
+    use std::fs::File;
+    use std::io::BufReader;
+    use std::sync::atomic::{AtomicBool, Ordering};
+
+    static PLAYBACK_ACTIVE: AtomicBool = AtomicBool::new(false);
+
+    pub fn play_wav(path: &str) -> Result<(), String> {
+        let (_stream, stream_handle) = OutputStream::try_default()
+            .map_err(|e| format!("Ses cikisi baslatilamadi: {}", e))?;
+
+        let file = File::open(path)
+            .map_err(|e| format!("WAV dosyasi acilamadi: {}", e))?;
+        let source = Decoder::new(BufReader::new(file))
+            .map_err(|e| format!("WAV cozulemedi: {}", e))?;
+
+        let sink = Sink::try_new(&stream_handle)
+            .map_err(|e| format!("Ses havuzu olusturulamadi: {}", e))?;
+
+        PLAYBACK_ACTIVE.store(true, Ordering::Relaxed);
+        sink.append(source);
+
+        sink.sleep_until_end();
+        PLAYBACK_ACTIVE.store(false, Ordering::Relaxed);
+        Ok(())
+    }
+
+    pub fn is_playing() -> bool {
+        PLAYBACK_ACTIVE.load(Ordering::Relaxed)
+    }
+
+    pub fn play_wav_async(path: &str) -> Result<(), String> {
+        let path = path.to_string();
+        std::thread::spawn(move || {
+            if let Err(e) = play_wav(&path) {
+                log::error!("Async oynatma hatasi: {}", e);
+            }
+        });
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -71,5 +114,16 @@ mod tests {
         RECORDING.store(true, Ordering::Relaxed);
         stop_recording();
         assert!(!is_recording());
+    }
+
+    #[test]
+    fn playback_not_active_by_default() {
+        assert!(!playback::is_playing());
+    }
+
+    #[test]
+    fn play_wav_nonexistent_file_returns_err() {
+        let result = playback::play_wav("/tmp/nonexistent_test_file.wav");
+        assert!(result.is_err());
     }
 }

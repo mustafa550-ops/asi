@@ -1,11 +1,20 @@
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::OnceLock;
+use super::stt::SttFallback;
 
 static WAKE_TRIGGERED: AtomicBool = AtomicBool::new(false);
+static STT_FALLBACK: OnceLock<SttFallback> = OnceLock::new();
 
 const WAKE_WORDS: &[&str] = &["adler", "hey adler", "adler asistan", "adler asistana"];
 
-pub fn init_wake_word() -> Result<(), String> {
-    log::info!("Wake word baslati — kelimeler: {:?}", WAKE_WORDS);
+pub fn init_wake_word(stt: SttFallback) -> Result<(), String> {
+    if STT_FALLBACK.get().is_some() {
+        log::info!("Wake word zaten baslatilmis — guncellenmiyor");
+        return Ok(());
+    }
+    STT_FALLBACK.set(stt)
+        .map_err(|_| "Wake word STT baslatilamadi".to_string())?;
+    log::info!("Wake word basladi — kelimeler: {:?}", WAKE_WORDS);
     Ok(())
 }
 
@@ -27,8 +36,10 @@ pub fn feed_audio(samples: &[i16]) {
         .sum::<f32>() / samples.len() as f32;
 
     if energy > 0.05 {
-        if let Some(text) = super::stt::transcribe(samples) {
-            check_wake_word(&text);
+        if let Some(stt) = STT_FALLBACK.get() {
+            if let Some(text) = stt.transcribe(samples) {
+                check_wake_word(&text);
+            }
         }
     }
 }
@@ -40,6 +51,7 @@ pub fn was_triggered() -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::agents::voice_handler::stt::SttFallback;
 
     #[test]
     fn check_wake_word_detects_adler() {
@@ -77,6 +89,7 @@ mod tests {
 
     #[test]
     fn feed_audio_low_energy_does_not_trigger() {
+        init_wake_word(SttFallback::new(vec![])).ok();
         WAKE_TRIGGERED.store(false, Ordering::SeqCst);
         let samples = vec![0i16; 100];
         feed_audio(&samples);
@@ -85,7 +98,7 @@ mod tests {
 
     #[test]
     fn init_wake_word_succeeds() {
-        let result = init_wake_word();
+        let result = init_wake_word(SttFallback::new(vec![]));
         assert!(result.is_ok());
     }
 }

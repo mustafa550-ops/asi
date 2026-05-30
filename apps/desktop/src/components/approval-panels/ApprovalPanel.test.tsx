@@ -28,7 +28,11 @@ describe("ApprovalPanel", () => {
 
   it("shows approval card after event", () => {
     render(<ApprovalPanel />);
-    act(() => { triggerApproval?.(JSON.stringify({ id: "1", task: "test", summary: "detay" })); });
+    act(() => {
+      triggerApproval?.(
+        JSON.stringify({ id: "1", task: "test", summary: "detay" }),
+      );
+    });
     expect(screen.getByText(/Görev/)).toBeInTheDocument();
     expect(screen.getByText("test")).toBeInTheDocument();
   });
@@ -37,7 +41,11 @@ describe("ApprovalPanel", () => {
     mockInvoke.mockResolvedValue("success");
     const onResult = vi.fn();
     render(<ApprovalPanel onResult={onResult} />);
-    act(() => { triggerApproval?.(JSON.stringify({ id: "x1", task: "test", summary: "detay" })); });
+    act(() => {
+      triggerApproval?.(
+        JSON.stringify({ id: "x1", task: "test", summary: "detay" }),
+      );
+    });
     screen.getByText("Onayla").click();
     await vi.waitFor(() => {
       expect(onResult).toHaveBeenCalledWith("approve", "success");

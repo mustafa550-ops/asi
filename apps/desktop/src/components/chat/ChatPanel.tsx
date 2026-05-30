@@ -28,9 +28,13 @@ export default function ChatPanel() {
   const [showHistory, setShowHistory] = useState(false);
   const [showSlash, setShowSlash] = useState(false);
   const [sources, setSources] = useState<RagSource[]>([]);
-  const [sessions, setSessions] = useState<{ id: string; title: string; date: string }[]>([]);
+  const [sessions, setSessions] = useState<
+    { id: string; title: string; date: string }[]
+  >([]);
   const [activeSession, setActiveSession] = useState<string | null>(null);
-  const [attachedFiles, setAttachedFiles] = useState<{ name: string; content: string }[]>([]);
+  const [attachedFiles, setAttachedFiles] = useState<
+    { name: string; content: string }[]
+  >([]);
 
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -38,8 +42,11 @@ export default function ChatPanel() {
   useEffect(() => {
     invoke<string>("list_chat_sessions", { limit: 50 })
       .then((raw) => {
-        const list: { id: string; title: string; created_at: string }[] = JSON.parse(raw);
-        setSessions(list.map((s) => ({ id: s.id, title: s.title, date: s.created_at })));
+        const list: { id: string; title: string; created_at: string }[] =
+          JSON.parse(raw);
+        setSessions(
+          list.map((s) => ({ id: s.id, title: s.title, date: s.created_at })),
+        );
       })
       .catch(() => {});
   }, [messageCount]);
@@ -52,56 +59,88 @@ export default function ChatPanel() {
     if (messageCount > 0 && lastMessage?.role === "user") {
       invoke<string>("hybrid_search", { query: lastMessage.content, limit: 3 })
         .then((raw) => {
-          const results: { content: string; source: string; score: number; method: string }[] = JSON.parse(raw);
-          setSources(results.map((r) => ({
-            title: r.content.length > 40 ? r.content.slice(0, 40) + "..." : r.content,
-            source: r.source,
-            relevance: r.score,
-          })));
+          const results: {
+            content: string;
+            source: string;
+            score: number;
+            method: string;
+          }[] = JSON.parse(raw);
+          setSources(
+            results.map((r) => ({
+              title:
+                r.content.length > 40
+                  ? r.content.slice(0, 40) + "..."
+                  : r.content,
+              source: r.source,
+              relevance: r.score,
+            })),
+          );
         })
         .catch(() => {});
     }
   }, [messageCount, lastMessage]);
 
-  const handleApprovalResult = useCallback((action: "approve" | "reject", summary: string) => {
-    const msg = action === "approve"
-      ? `✅ Onaylandı: ${summary}`
-      : `❌ Reddedildi: ${summary}`;
-    useChatStore.getState().addMessage?.("system", msg);
-  }, []);
+  const handleApprovalResult = useCallback(
+    (action: "approve" | "reject", summary: string) => {
+      const msg =
+        action === "approve"
+          ? `✅ Onaylandı: ${summary}`
+          : `❌ Reddedildi: ${summary}`;
+      useChatStore.getState().addMessage?.("system", msg);
+    },
+    [],
+  );
 
-  const handleSlashSelect = useCallback((cmd: string) => {
-    setInput(cmd + " ");
-    setShowSlash(false);
-    inputRef.current?.focus();
-  }, [setInput]);
-
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setInput(val);
-    if (val === "/") {
-      setShowSlash(true);
-    } else {
+  const handleSlashSelect = useCallback(
+    (cmd: string) => {
+      setInput(cmd + " ");
       setShowSlash(false);
-    }
-  }, [setInput]);
+      inputRef.current?.focus();
+    },
+    [setInput],
+  );
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !showSlash) {
-      send();
-    }
-  }, [send, showSlash]);
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const val = e.target.value;
+      setInput(val);
+      if (val === "/") {
+        setShowSlash(true);
+      } else {
+        setShowSlash(false);
+      }
+    },
+    [setInput],
+  );
 
-  const handleAttach = useCallback((file: { name: string; size: number; content: string }) => {
-    setAttachedFiles((prev) => [...prev, { name: file.name, content: file.content }]);
-  }, []);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter" && !showSlash) {
+        send();
+      }
+    },
+    [send, showSlash],
+  );
+
+  const handleAttach = useCallback(
+    (file: { name: string; size: number; content: string }) => {
+      setAttachedFiles((prev) => [
+        ...prev,
+        { name: file.name, content: file.content },
+      ]);
+    },
+    [],
+  );
 
   return (
     <div className="chat-panel">
       <ProactiveAlert />
       <div className="chat-header">
         <span className="chat-title">Sohbet</span>
-        <button className="chat-history-btn" onClick={() => setShowHistory(!showHistory)}>
+        <button
+          className="chat-history-btn"
+          onClick={() => setShowHistory(!showHistory)}
+        >
           {showHistory ? "Gizle" : "Geçmiş"}
         </button>
       </div>
@@ -119,15 +158,38 @@ export default function ChatPanel() {
       <div className="chat-messages" role="log" aria-label="Sohbet mesajları">
         {messages.map((m, i) => (
           <div key={i} className={`message ${m.role}`}>
-            <strong style={{ fontSize: "0.75rem", display: "block", marginBottom: 4 }}>
-              {m.role === "adler" ? "ADLER" : m.role === "system" ? "Sistem" : "Sen"}
+            <strong
+              style={{ fontSize: "0.75rem", display: "block", marginBottom: 4 }}
+            >
+              {m.role === "adler"
+                ? "ADLER"
+                : m.role === "system"
+                  ? "Sistem"
+                  : "Sen"}
             </strong>
             {m.role === "system" ? (
-              <span style={{ fontSize: "0.8rem", color: "#8b949e", fontStyle: "italic" }}>{m.content}</span>
+              <span
+                style={{
+                  fontSize: "0.8rem",
+                  color: "#8b949e",
+                  fontStyle: "italic",
+                }}
+              >
+                {m.content}
+              </span>
             ) : m.role === "adler" ? (
               <MarkdownRenderer content={m.content} />
             ) : (
-              <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", margin: 0, fontSize: "0.85rem" }}>{m.content}</pre>
+              <pre
+                style={{
+                  whiteSpace: "pre-wrap",
+                  fontFamily: "inherit",
+                  margin: 0,
+                  fontSize: "0.85rem",
+                }}
+              >
+                {m.content}
+              </pre>
             )}
           </div>
         ))}
@@ -146,13 +208,23 @@ export default function ChatPanel() {
         )}
         <FileAttachment onAttach={handleAttach} />
         {attachedFiles.length > 0 && (
-          <div style={{ fontSize: "0.7rem", color: "#8b949e", padding: "2px 0" }}>
+          <div
+            style={{ fontSize: "0.7rem", color: "#8b949e", padding: "2px 0" }}
+          >
             {attachedFiles.map((f, i) => (
               <span key={i} style={{ marginRight: 8 }}>
                 📄 {f.name}
                 <button
-                  style={{ background: "none", border: "none", color: "#f85149", cursor: "pointer", marginLeft: 4 }}
-                  onClick={() => setAttachedFiles((p) => p.filter((_, j) => j !== i))}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#f85149",
+                    cursor: "pointer",
+                    marginLeft: 4,
+                  }}
+                  onClick={() =>
+                    setAttachedFiles((p) => p.filter((_, j) => j !== i))
+                  }
                 >
                   &times;
                 </button>

@@ -20,10 +20,15 @@ interface MainLayoutProps {
   children: ReactNode;
 }
 
-export function MainLayout({ activeTab, onTabChange, children }: MainLayoutProps) {
+export function MainLayout({
+  activeTab,
+  onTabChange,
+  children,
+}: MainLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
 
-  const currentLabel = NAV_ITEMS.find((n) => n.id === activeTab)?.label ?? "ADLER ASI";
+  const currentLabel =
+    NAV_ITEMS.find((n) => n.id === activeTab)?.label ?? "ADLER ASI";
 
   return (
     <div className="layout-root">

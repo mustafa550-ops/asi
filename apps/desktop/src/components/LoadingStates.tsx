@@ -1,7 +1,15 @@
 import { type ReactNode } from "react";
 
-export function Skeleton({ width = "100%", height = "16px" }: { width?: string; height?: string }) {
-  return <div className="skeleton" style={{ width, height }} aria-hidden="true" />;
+export function Skeleton({
+  width = "100%",
+  height = "16px",
+}: {
+  width?: string;
+  height?: string;
+}) {
+  return (
+    <div className="skeleton" style={{ width, height }} aria-hidden="true" />
+  );
 }
 
 export function LoadingSpinner({ text = "Yükleniyor..." }: { text?: string }) {
@@ -13,7 +21,17 @@ export function LoadingSpinner({ text = "Yükleniyor..." }: { text?: string }) {
   );
 }
 
-export function EmptyState({ icon = "📭", title, description, action }: { icon?: string; title: string; description?: string; action?: ReactNode }) {
+export function EmptyState({
+  icon = "📭",
+  title,
+  description,
+  action,
+}: {
+  icon?: string;
+  title: string;
+  description?: string;
+  action?: ReactNode;
+}) {
   return (
     <div className="empty-state" role="status">
       <span className="empty-icon">{icon}</span>

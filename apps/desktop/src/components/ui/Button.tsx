@@ -5,9 +5,18 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: "sm" | "md";
 }
 
-export function Button({ variant = "primary", size = "md", className = "", children, ...rest }: ButtonProps) {
+export function Button({
+  variant = "primary",
+  size = "md",
+  className = "",
+  children,
+  ...rest
+}: ButtonProps) {
   return (
-    <button className={`ui-btn ui-btn-${variant} ui-btn-${size} ${className}`} {...rest}>
+    <button
+      className={`ui-btn ui-btn-${variant} ui-btn-${size} ${className}`}
+      {...rest}
+    >
       {children}
     </button>
   );
