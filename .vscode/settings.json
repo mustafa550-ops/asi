@@ -1,0 +1,17 @@
+{
+  "rust-analyzer.linkedProjects": [
+    "./apps/desktop/src-tauri/Cargo.toml"
+  ],
+  "rust-analyzer.cargo.features": "all",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer"
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/target": true,
+    "**/.git": true
+  }
+}

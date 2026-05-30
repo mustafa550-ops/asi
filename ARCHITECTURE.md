@@ -1,7 +1,7 @@
 # ADLER ASI — Mimari Dokümanı
 
-> **Versiyon:** 0.1.0  
-> **Mimari Karar Kaydı:** Bu doküman, sistemin neden bu teknolojilerle inşa edildiğini, bileşenlerin nasıl haberleştiğini ve katmanlı yapının mantığını açıklar.
+> **Versiyon:** 0.2.2 (Alpha - RAG Pipeline + UI Wiring)  
+> **Mimari Karar Kaydı:** Bu doküman, sistemin neden bu teknolojilerle inşa edildiğini, bileşenlerin nasıl haberleştiğini ve katmanlı yapının mantığını açıklar. (FAZ 5-8 Kısmi Tamamlanma İtibarıyla Güncel)
 
 ---
 
@@ -26,15 +26,15 @@
 - **Güvenlik:** Rust tarafında çalışan IPC, frontend'in sisteme erişimi sınırlı. CSP null policy.
 - **Event sistemi:** Tauri Events, Rust'tan React'e canlı broadcast için ideal (EventBus).
 
-### SQLite + rusqlite (Veritabanı)
+### SQLCipher (AES-256 Şifreli Veritabanı)
 
-**Karar:** PostgreSQL veya başka bir server-based DB yerine embedded SQLite.
+**Karar:** Standart SQLite yerine `bundled-sqlcipher` kütüphanesi.
 
 **Gerekçe:**
-- **Local-First:** Veri asla dışarı çıkmaz. DB dosyası yerel diskte.
-- **Sıfır yapılandırma:** Kurulum gerekmez. `rusqlite` bundled feature ile derlenir.
-- **FTS5:** Full-text search desteği sayesinde keyword arama doğal olarak çalışır.
-- **WAL mode:** Concurrent okuma/yazma, memory manager ve skill registry aynı anda erişebilir.
+- **Local-First & Zırhlı:** Veri asla dışarı çıkmaz, ancak diskte de açık metin (plaintext) olarak tutulamaz.
+- **AES-256-GCM:** Veritabanı dosyasına OS düzeyindeki keyring şifresi olmadan erişilemez.
+- **Sıfır yapılandırma:** Kurulum gerekmez. `rusqlite` bundled-sqlcipher feature ile derlenir.
+- **FTS5 & WAL:** Full-text search ve concurrent read/write (Memory, Skill Registry) şifrelemeye rağmen tam performansla çalışır.
 
 ### Ollama (Yerel LLM)
 
@@ -91,7 +91,10 @@
 │  ├─────────────┤  ├────────────────┤                  │
 │  │ Assimilation │  │ MCP Server     │                  │
 │  │ (clone→adapt)│  │ (JSON-RPC WS)  │                  │
-│  └─────────────┘  └────────────────┘                  │
+│  ├─────────────┤  ├────────────────┤                  │
+│  │ TruthEnforcer│  │ VoiceHandler   │                  │
+│  │ (Zero-Mock)  │  │ (STT / TTS)    │                  │
+└─────────────┘  └────────────────┘                  │
 ├─────────────────────────────────────────────────────┤
 │                     SQLITE                            │
 │  embeddings  edge_history  strategic_memory           │
@@ -219,6 +222,14 @@ WebSocket üzerinden JSON-RPC 2.0 sunucusu (`ws://127.0.0.1:9876`).
 - Custom tool registration → yeni yetenekler eklenebilir
 - Ayrı bir tokio thread'inde çalışır, ana pipeline'ı bloklamaz
 
+### 3.6 Backend Truth Enforcer (Zero-Mock Policy)
+
+Otonom asimilasyon sırasında UI ve Backend arasında "sahte/mock" verilerin kullanılmasını engelleyen valilik sistemidir.
+
+- **KURAL 9 (Fullstack Orkestrasyonu):** Geliştirme akışı daima *Veri → Çekirdek → Köprü (Bridge) → State → UI* yönünde ilerlemelidir.
+- Frontend'de uydurma veriler (`mock_data.json` gibi) kullanmak kesinlikle yasaktır. 
+- Eğer bir sistem bağlanmadıysa, sahte başarılı cevap dönmek yerine, dürüstçe `Err("Bağlantı Kurulmadı")` döndürülmelidir (Sıfır-Mock prensibi).
+
 ---
 
 ## 4. Veritabanı Şeması
@@ -284,16 +295,24 @@ def analyze(symbol):
 
 ---
 
-## 6. Asimilasyon Motoru
+## 6. Asimilasyon Motoru ve İş Akışı
 
-GitHub reposundan kod alıp ADLER'e entegre eden 6 adımlı pipeline:
+ADLER ASI'nin dış kaynaklardan (GitHub vb.) yeni bir özellik alıp özümseme stratejisi, kopyalamak değil **"asimile etmektir"**. Bu süreç 3 ana fazda yürütülür:
 
-1. **Clone** → libgit2 ile repo kopyalama
-2. **Analyze** → Dil/framework tespiti (Cargo.toml, package.json, requirements.txt)
-3. **Split** → core/interface/config kategorizasyonu
-4. **Adapt** → Cross-language dönüşüm (Python/JS/Go/Ruby/C# → Rust)
-5. **Sandbox** → Wasmtime'da derleme + test
-6. **Register** → module_registry'e kaydetme
+### Faz 1: İndirme (Download & Quarantine)
+- Dış proje `assimilation/downloads/<ornek_proje_adi>` dizinine klonlanır.
+- Kaynak proje ana repoya asla bir git submodule olarak bağlanmaz. 
+- Bu dizin `.gitignore` içindedir, projeyi şişirmez.
+
+### Faz 2: Ayrıştırma ve Hazırlık (Extraction & Preparation)
+- Kaynak kod bütünüyle kullanılmaz. Yalnızca istenilen spesifik özellik/algoritma laboratuvarda sökülür.
+- İlgisiz ayarlar, eski UI yapıları ve bağımlılıklar çöpe atılır. 
+
+### Faz 3: Asimilasyon ve Entegrasyon (Integration)
+- Alınan kod parçası, KURAL 9 ve Rust/TypeScript standartlarına göre yeniden uyarlanır.
+- Uyarlanan bu özellik, `src-tauri/src/modules/<bizim_yeni_modulumuz>` veya `src/components/<bizim_ui_modulumuz>` içinde **yepyeni bir klasörde ve yeni bir isimle** oluşturulur.
+- ADLER'in native bir organı haline gelir.
+- İşlem bittikten sonra `assimilation/downloads/` dizinindeki kaynak proje silinir.
 
 ---
 
@@ -357,3 +376,4 @@ main.rs
 | Frontend State | Zustand (boş) | Redux, Jotai | Planlandı, henüz implemente edilmedi |
 | UI Routing | useState tab | React Router | 3 sekme için yönlendirici gereksiz |
 | Ses Sentezi | 3-tier fallback | Sadece bir motor | Offline/online/fallback garantisi |
+| Geliştirme Asistanı Skills | G0DM0D3 (parseltongue/autotune/ultraplinian/stm/godmode) | Yok | opencode CLI'a `.opencode/skills/` ile instruction-based skill olarak entegre edildi; ADLER proje koduna dokunmaz |

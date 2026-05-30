@@ -1,0 +1,1 @@
+cargo clippy --workspace -- -D warnings\npnpm -r lint\npnpm -r format\npnpm -r test

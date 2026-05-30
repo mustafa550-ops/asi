@@ -1,0 +1,28 @@
+# ADLER ASI - Root Configuration
+
+llm:
+  default_provider: "ollama" # ollama or claude
+  ollama:
+    host: "http://localhost:11434"
+    model: "llama3"
+  claude:
+    model: "claude-3-5-sonnet-20240620"
+    max_tokens: 4096
+
+voice:
+  wake_word: "hey adler"
+  stt_provider: "vosk" # vosk or whisper
+  tts_provider: "piper" # piper or elevenlabs
+  language: "tr"
+
+hardware:
+  enabled: false
+  gpio_pins:
+    relay_1: 17
+    relay_2: 27
+    sensor_temp: 22
+
+memory:
+  db_path: "./data/adler.db"
+  vector_dim: 384 # MiniLM-L6-v2 dimension
+  encryption_enabled: true

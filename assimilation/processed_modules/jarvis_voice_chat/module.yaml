@@ -1,0 +1,13 @@
+id: jarvis-voice-chat
+version: 1.0.0
+description: "Sohbet ve sesli asistan özelliklerinin asimile edilmiş ADLER ASI çekirdek versiyonu."
+permissions:
+  fs_read: true
+  fs_write: true
+  network: true
+events:
+  publish:
+    - "voice_command_processed"
+    - "intent_dispatched"
+  subscribe:
+    - "voice_transcript_received"

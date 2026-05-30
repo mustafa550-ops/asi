@@ -1,0 +1,16 @@
+#[path = "mod_tests/pipeline_intent_to_agent.rs"]
+pub mod pipeline_intent_to_agent;
+#[path = "mod_tests/memory_full_cycle.rs"]
+pub mod memory_full_cycle;
+#[path = "mod_tests/skill_lifecycle.rs"]
+pub mod skill_lifecycle;
+#[path = "mod_tests/assimilation_e2e.rs"]
+pub mod assimilation_e2e;
+pub mod helpers;
+pub mod llm_fallback_chain;
+pub mod mcp_server_client;
+pub mod self_healing_loop;
+pub mod concurrent_agents;
+pub mod wasm_sandbox;
+pub mod security_chain;
+pub mod rag_pipeline;

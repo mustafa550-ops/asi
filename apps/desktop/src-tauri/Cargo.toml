@@ -1,0 +1,93 @@
+[package]
+name = "adler-asi"
+version = "0.1.0"
+edition = "2021"
+description = "ADLER ASI - Autonomous Digital Operator"
+
+[features]
+default = ["voice"]
+voice = ["dep:vosk"]
+
+[lib]
+name = "adler_asi_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# Tauri core
+tauri = { version = "2", features = [] }
+tauri-plugin-shell = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+adler-core = { path = "../../core" }
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# SQLite + Vector search
+rusqlite = { version = "0.32", features = ["bundled-sqlcipher", "backup"] }
+hex = "0.4"
+
+# HTTP client (Ollama API)
+reqwest = { version = "0.12", features = ["json", "blocking"] }
+
+# MCP / WebSocket
+tokio-tungstenite = "0.24"
+url = "2"
+futures-util = "0.3"
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# Logging
+log = "0.4"
+env_logger = "0.11"
+
+# Error handling
+thiserror = "2"
+anyhow = "1"
+
+# Git (libgit2 for assimilation)
+git2 = "0.19"
+
+# Wasm sandbox
+wasmtime = "24"
+
+# System monitoring
+sysinfo = "0.32"
+
+# UUID generation
+uuid = { version = "1", features = ["v4"] }
+
+# Date/time handling
+chrono = { version = "0.4", features = ["serde"] }
+regex = "1"
+
+# Crypto
+ring = "0.17"
+
+# Voice: audio capture
+cpal = "0.15"
+
+# Voice: offline STT (Vosk) — opsiyonel, voice feature ile
+vosk = { version = "0.3", optional = true }
+
+# Wake word: keyword spotting (STT-based)
+
+# Voice: WAV output
+hound = "3.5"
+
+# Voice: text preprocessing
+unicode-normalization = "0.1"
+axum = "0.8.9"
+tower-http = { version = "0.6.11", features = ["cors"] }
+
+[dev-dependencies]
+mockall = "0.13"
+tempfile = "3"
+rstest = "0.23"
+assert_matches = "1"
+similar-asserts = "1.6"

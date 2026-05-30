@@ -1,0 +1,48 @@
+[package]
+name = "adler-core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Async Runtime
+tokio = { version = "1", features = ["full"] }
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tracing-appender = "0.2"
+
+# Error Handling
+thiserror = "2"
+anyhow = "1"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+
+# Configuration
+config = "0.14"
+dotenvy = "0.15"
+
+# Utilities
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+async-trait = "0.1"
+
+# Database
+rusqlite = { version = "0.32", features = ["bundled", "chrono", "uuid"] }
+
+# Event Bus
+tokio-stream = "0.1"
+
+# Web / RPC / Health
+axum = "0.8"
+tower-http = { version = "0.6", features = ["cors", "trace"] }
+
+[dev-dependencies]
+mockall = "0.13"
+tempfile = "3"
+rstest = "0.23"
+assert_matches = "1"
+similar-asserts = "1.6"

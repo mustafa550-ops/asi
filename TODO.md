@@ -1,177 +1,158 @@
 # ADLER ASI — Yapılacaklar Listesi
 
-> **Son güncelleme:** 2026-05-25  
-> **Mevcut versiyon:** 0.1.0  
-> **Durum:** Alpha — 69 Rust dosyası, 0 warning (cargo check)
+> **Son güncelleme:** 2026-05-30
+> **Mevcut versiyon:** 0.2.1 (Alpha - Tauri Bridge + UI Wiring)
+> **Durum:** Alpha — RAG Pipeline + UI Entegrasyonu Tamamlandı
 
 ---
 
 ## 1. Bloker (Acil)
 
-### `-lvosk` link hatası
-
-**Sorun:** `cargo build` ve `cargo test` linker aşamasında `-lvosk` kütüphanesini bulamıyor. `cargo check` sorunsuz çalışır.
-
-**Etki:** Binary üretilemiyor, testler çalıştırılamıyor.
-
-**Çözüm önerileri:**
-- [ ] Vosk kütüphanesini sisteme kur (`apt install vosk` veya source'dan derle)
-- [ ] Veya vosk bağımlılığını `cfg(feature = "voice")` ile opsiyonel yap
-- [ ] Veya CI/CD ortamında vosk'u önceden yükle
+Şu an bilinen acil bir bloker bulunmamaktadır.
 
 ---
 
 ## 2. Tamamlanan Fazlar
 
-### Phase 1 — Temel Yapı
-- [x] Rust çekirdek + Tauri köprüsü
-- [x] React 19 arayüz (Chat, Dashboard, Approval)
-- [x] SQLite veritabanı + şema
-- [x] Ollama entegrasyonu
-- [x] EventBus (Tauri Events)
+### Phase 1 — Monorepo Yapısı (G001-G015)
+- [x] Monorepo yapısı (`apps/`, `packages/`, Cargo workspace)
+- [x] pnpm workspace + cargo workspace
+- [x] Git hooks (Husky), CI/CD (GitHub Actions)
+- [x] Kök konfigürasyon (`config/adler.yaml`), .env.example
+- [x] README, CONTRIBUTING, LICENSE, SECURITY
+- [x] Justfile, Dockerfile.core, VS Code settings
+- [x] Changesets sürüm yönetimi
 
-### Phase 2 — Ajanlar ve Yetenekler
-- [x] 8 ajan implementasyonu (IntentJudge, Diagnostic, Hardware, MarketAnalyst, SystemManager, DocumentAnalyst, VoiceHandler, Supervisor)
-- [x] Rust→Rust adaptasyonu (assimilation pipeline)
-- [x] Hardware Controller (GPIO/relay/sensor)
-- [x] Document Analyst (reader/RAG)
-- [x] CLI (assimilate, skill-add, diagnostic, status)
-- [x] MCP client (generic WebSocket)
-- [x] Self-healing (strategic memory lookup, optimization suggestions)
-- [x] CLI genişletme (skill-list, activate/deactivate/run/remove, security-audit)
+### Phase 2 — Rust Çekirdek Altyapısı (G016-G035)
+- [x] Kernel giriş noktası, tokio runtime, graceful shutdown
+- [x] Konfigürasyon yöneticisi, error.rs (AdlerError)
+- [x] AppState (global durum), Event Bus (tokio broadcast)
+- [x] JSON-RPC router, scheduler, log rotasyonu
+- [x] Metrik toplayıcı, Wasm sandbox (wasmtime)
+- [x] IPC, health check, feature flags, sysinfo
+- [x] İş kuyruğu, rate limiter, core unit testleri
 
-### Phase 3 — Stabilizasyon (M3.1–M3.7)
-- [x] Kritik hata fix: duplicate schema, hardcoded model string, dead code, todo!()
-- [x] Voice pipeline: Vosk STT init, espeak-ng TTS fallback, wake word fix
-- [x] Skill executor: real subprocess execution (Python/JS/Shell/Wasm)
-- [x] Semantic trigger matching (Ollama fallback)
-- [x] Skill lifecycle (active/version, auto-bump)
-- [x] Wasm sandbox (fuel limits, `_start` fallback, WAT compile)
-- [x] Unit tests (20+ — registry, executor, sandbox)
-- [x] Security module (audit, keyring persist/load, PBKDF2)
+### Phase 3 — Ajan Sistemi (G036-G055)
+- [x] Agent trait, yaşam döngüsü, Orchestrator
+- [x] Intent Judge, Diagnostic, Hardware Controller
+- [x] Market Analyst (Binance), System Manager
+- [x] Document Analyst (RAG), Voice Handler, Supervisor
+- [x] Ajan iletişim protokolü (AMP), kuyruk, sandbox
+- [x] FSM, yetki matrisi, performans monitörü
+- [x] Hot-reload, retry/backoff, test framework
 
----
+### Phase 4 — Bellek & DB (G056-G070, G121-G135)
+- [x] Memory Manager (short/long term), session memory
+- [x] Bağlam sıkıştırma, strategic memory
+- [x] Bellek kategorizasyonu, önceliklendirme, consolidation
+- [x] Episodic, semantic, procedural memory
+- [x] Bellek export/import, şifreleme (SQLCipher)
+- [x] SQLite bağlantı yöneticisi, migrasyon (refinery)
+- [x] sqlite-vss vektör arama, embedding üretim
+- [x] Edge history, strategic memory, skill registry tabloları
+- [x] Audit log, backup/restore, FTS5, şifreleme
 
-## 3. Partially Complete (Kısmen Tamam)
+### Phase 5 — Tauri Köprüsü (G071-G085)
+- [x] Tauri v2 proje iskeleti, komut router
+- [x] Broadcast event bus, FS API (güvenli dosya erişimi)
+- [x] Notification API, window yönetimi, global kısayol
+- [x] Autostart, updater (taslak), clipboard
+- [x] Bridge performans monitörü, güvenlik politikası
 
-### Zustand Store'ları
+### Phase 6 — React UI — Temel Bileşenler (G086-G105)
+- [x] React 19 + TypeScript + Vite iskeleti
+- [x] Tasarım sistemi token'ları, CSS değişkenleri (`:root`)
+- [x] UI Kit: Button, Input, Card, Badge, Tooltip, Modal, Toast
+- [x] Layout: Sidebar, Header, Main Content, Status Bar
+- [x] Dashboard ana ekranı, AgentCard, EventStream
+- [x] SystemMetrics live data, NotificationCenter
+- [x] ApprovalPanel (onResult callback), Settings (6 sekme)
+- [x] ErrorBoundary, LoadingStates, klavye navigasyonu
+- [x] a11y (aria-label, role, tabindex)
+- [ ] PWA / Web manifest (düşük öncelik)
+- [x] 227 component testi
 
-**Durum:** `package.json`'da bağımlılık var, `src/stores/` dizini var ama **boş**.
+### Phase 7 — Chat & Sesli Arayüz (G106-G120)
+- [x] Chat arayüzü, Message bubble, Markdown render
+- [x] Typing indicator, dosya ekleme
+- [x] ChatHistory (backend session), ContextWindow (RAG)
+- [x] Slash commands, VoiceAssistant full-screen (G117)
+- [x] Approval loop UI, proactive alert
+- [ ] CodeRunner (G116) — chat'te kod çalıştırma
+- [ ] Global klavye kısayolları
 
-- [ ] `src/stores/chatStore.ts` — sohbet geçmişi, mesaj state'i
-- [ ] `src/stores/dashboardStore.ts` — sistem durumu state'i
-- [ ] `src/stores/approvalStore.ts` — onay bekleme state'i
-- [ ] `src/stores/skillsStore.ts` — skill listesi state'i
-- [ ] Mevcut `useState` kullanımlarını Zustand'a taşı
-
-### ClaudeClient (Bulut LLM)
-
-**Durum:** `src/llm/claude.rs` implemente edildi ama **pipeline'a bağlı değil**. Ollama birincil LLM olarak çalışıyor.
-
-- [ ] Orchestrator'a ikinci LLM olarak ekle
-- [ ] Intent classification için Ollama, ağır analiz için Claude rotası
-- [ ] Hibrit mod: kullanıcı onayıyla Claude çağrısı
-
-### CommandRouter
-
-**Durum:** `bridge/command_router.rs` tanımlandı ama **kullanılmıyor**. Orchestrator routing'i doğrudan yapıyor.
-
-- [ ] Route'ları güncelle (8 ajan için)
-- [ ] Orchestrator'da CommandRouter'ı opsiyonel olarak wire et
-- [ ] EventBus ile entegre et
-
-### Frontend Testleri
-
-**Durum:** Vitest yapılandırıldı ama **henüz test dosyası yok**.
-
-- [ ] `src/components/__tests__/ChatPanel.test.tsx`
-- [ ] `src/components/__tests__/Dashboard.test.tsx`
-- [ ] `src/components/__tests__/ApprovalPanel.test.tsx`
-- [ ] `src/lib/__tests__/tauri.test.ts`
-- [ ] `src/hooks/__tests__/useTauriEvent.test.ts`
-
-### Rust → Wasm Derleme
-
-**Durum:** `wasm_compile::compile_rust_source()` her zaman hata döndürür (wasm-pack gerekli).
-
-- [ ] `wasm-pack` veya `cargo-wasi` ile entegrasyon
-- [ ] Sandbox testleri için örnek WASM modülleri
-- [ ] `compile_and_execute()` için WAT pipeline
-
----
-
-## 4. Planlanan Özellikler
-
-### Kısa Vade (Önümüzdeki 2 Hafta)
-
-- [ ] **SQLCipher DB şifreleme**: Veritabanının tamamını şifrele. AES-GCM anahtarı keyring'den.
-- [ ] **skills-manager UI**: React bileşeni (`src/components/skills-manager/`) — skill listeleme, ekleme/silme, tetikleme.
-- [ ] **voice-ui**: React bileşeni (`src/components/voice-ui/`) — ses seviyesi göstergesi, kayıt düğmesi, TTS oynatma.
-- [ ] **Behavior Tree Model**: 10+ başarılı skill çalışmasından sonra otomatik davranış modeli oluşturma (evolution.rs'de tanımlı, execution bekliyor).
-
-### Orta Vade (1 Ay)
-
-- [ ] **Vector index**: Embedding sayısı arttığında brute-force cosine similarity yerine HNSW/IVF indeksi.
-- [ ] **Async pipeline**: Orchestrator'ı tam async yap (tokio::sync::RwLock ile Mutex yer değiştirme).
-- [ ] **Multi-session**: Aynı anda birden fazla kullanıcı/konuşma.
-- [ ] **Plugin sistemi**: Skill manifestosu yerine compiled plugin (WASM) desteği.
-- [ ] **MCP tool zenginleştirme**: tools/call, resources/list, prompts/get desteği.
-
-### Uzun Vade (3+ Ay)
-
-- [ ] **Remote agent**: SSH üzerinden uzak sistemlerde ADLER ajanı çalıştırma.
-- [ ] **Multi-modal**: Görsel girdi (OCR, screenshot analizi).
-- [ ] **Distributed memory**: Birden fazla ADLER instance'ı arasında bellek paylaşımı.
-- [ ] **Auto-scaling**: Ollama modelini otomatik değiştirme (küçük→büyük, task complexity'ye göre).
-- [ ] **Mobile bridge**: Tauri mobile ile iOS/Android desteği.
+### Phase 8 — RAG Pipeline (G136-G150)
+- [x] RAG pipeline yöneticisi, chunker, source attribution
+- [x] Dinamik indeksleme, semantik arama (hibrit)
+- [x] Context builder, bilgi tutarlılık kontrolü
+- [x] Bellek ağacı görselleştirmesi, eval framework
+- [x] RAG cache, feedback loop, pruning
+- [x] Cross-reference resolver
+- [x] 20 RAG integration test
 
 ---
 
-## 5. Known Issues (Bilinen Sorunlar)
+## 3. Devam Eden ve Sıradaki Fazlar
+
+### Phase 9 — Skill Registry & Manifesto Sistemi (G151-G165)
+- [ ] Skill manifesto parser, şema validasyonu
+- [ ] Skill tetikleyici motoru, runtime (Node.js)
+- [ ] Skill sandbox (Wasm), API bridge
+- [ ] Skill versiyonlama, gelişim takibi
+- [ ] Skill market, template generator, dependency resolver
+- [ ] Skill Registry UI
+
+### Phase 10 — Intent Judge & NLP (G166-G180)
+- [ ] Intent classification (LLM tabanlı)
+- [ ] NER, bağlam anlama, duygu analizi
+- [ ] Çok dilli destek, confidence threshold
+- [ ] Slot filling, custom intent, A/B test
+
+### Phase 11 — Ollama & Cloud LLM (G181-G205)
+- [ ] Ollama client, model yöneticisi, context window
+- [ ] Prompt template engine, stream parser
+- [ ] Model benchmark, fallback, quantizasyon
+- [ ] Prompt injection koruması, function calling
+- [ ] Claude API client, hibrit mod, maliyet optimizasyonu
+
+### Phase 12 — Sesli Asistan (G206-G220)
+- [ ] Wake word algılama, ses kaydı
+- [ ] STT (Vosk + Whisper), TTS (Piper)
+- [ ] Ses kuyruğu, sesli diyalog yöneticisi
+- [ ] Ses profilleri, gürültü engelleme
+- [ ] Çoklu dil sesli destek
+
+---
+
+## 4. Known Issues (Bilinen Sorunlar)
 
 | # | Sorun | Etki | Öncelik |
 |---|-------|------|---------|
-| 1 | `-lvosk` linker hatası | Binary üretilemiyor | **KRITIK** |
-| 2 | Mutex contention riski | Çoklu thread'de lock çakışması | ORTA |
-| 3 | Cosine similarity O(n) | >10k embedding'de yavaşlama | DÜŞÜK |
-| 4 | Blocking LLM çağrıları | GUI donması (async command ile çözülür) | ORTA |
-| 5 | Sync-over-async pattern | Her LLM çağrısı yeni tokio runtime | DÜŞÜK |
-| 6 | Zustand store boş | State management eksik | ORTA |
-| 7 | Turkish/English mixed | Bazı loglar İngilizce kalmış | DÜŞÜK |
-| 8 | Hiçbir migration testi yok | DB migration hataları fark edilmeyebilir | ORTA |
+| 1 | `voice` feature libvosk gerektiriyor | `--no-default-features` ile test | DÜŞÜK |
+| 2 | Wasm sandbox henüz skill'lerde aktif değil | Skill'ler native çalışır | ORTA |
+| 3 | LLM pipeline canlı Ollama gerektiriyor | Testler mock LLM ile geçer | DÜŞÜK |
+| 4 | HW Controller gerçek GPIO gerektiriyor | Simulator mod ile test | DÜŞÜK |
 
 ---
 
-## 6. Kod Kalitesi Metrikleri
+## 5. Kod Kalitesi Metrikleri
 
 | Metrik | Değer | Hedef |
 |--------|-------|-------|
-| Rust dosya sayısı | 69 | - |
-| TypeScript dosya sayısı | 8 | 15+ (UI genişlemesiyle) |
-| `cargo check` | 0 warning, 0 error | 0 |
-| Unit test sayısı | 20+ | 50+ |
-| Test coverage | ~%15 | %60+ |
-| CLI subcommand | 9 | 12+ |
-| Agent sayısı | 8 | 10+ |
-| Skill manifestosu | 2 | 10+ |
+| Rust test sayısı | 402 (285 unit + 117 integration) | 500+ |
+| React test sayısı | 227 (35 dosya) | 300+ |
+| Coverage (stmts) | %69 | %65 |
+| E2E test | 5 Playwright | 10+ |
+| `cargo check` | 0 error | 0 |
+| Monorepo | apps/desktop, packages/* | Modüler |
 
 ---
 
-## 7. Bağımlılık Güncelleme Planı
+## 6. Dağıtım Planı
 
-| Bağımlılık | Mevcut | Hedef | Tarih |
-|-----------|--------|-------|-------|
-| wasmtime | 24.x | 27.x | 2026-Q3 |
-| tauri | 2.x | 2.x (LTS) | Stabil |
-| react | 19.1 | 19.x | Stabil |
-| rusqlite | 0.32 | 0.34 | 2026-Q2 |
-| ring | 0.17 | 0.18 | 2026-Q2 |
-
----
-
-## 8. Dağıtım Planı
-
-- [ ] **v0.2.0**: Stable build (vosk link sorunu çözüldü)
-- [ ] **v0.3.0**: Skills UI + Zustand store'ları
-- [ ] **v0.4.0**: SQLCipher DB + Claude hybrid mode
-- [ ] **v1.0.0**: Production-ready (multi-session, plugin sistemi, test coverage %60+)
+- [x] **v0.1.0**: İlk iskelet
+- [x] **v0.2.0**: Headless Core + Tauri Bridge
+- [x] **v0.2.1**: RAG Pipeline + UI Wiring (şu an)
+- [ ] **v0.3.0**: Skill Registry + NLP
+- [ ] **v0.4.0**: Voice Assistant + LLM
+- [ ] **v1.0.0**: Tam Otonom Yapay Zeka Operatörü

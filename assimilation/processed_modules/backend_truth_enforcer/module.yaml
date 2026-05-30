@@ -1,0 +1,16 @@
+id: backend-truth-enforcer
+version: 1.0.0
+description: "AI Geliştirme Valisi: Mock verileri yasaklar ve KURAL 9 backend zorunluluğunu denetler."
+permissions:
+  fs_read: true
+  fs_write: true
+  network: false
+settings:
+  allow_mock_data: false
+  enforce_backend_first: true
+  max_retries: 3
+events:
+  publish: []
+  subscribe:
+    - "pre_generation"
+    - "post_generation"

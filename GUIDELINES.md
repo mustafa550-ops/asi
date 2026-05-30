@@ -267,3 +267,31 @@ def run():
 | espeak-ng | TTS için | 1.51+ |
 | Node.js | UI build için | 20+ |
 | wasm-pack | Rust→Wasm için | Opsiyonel |
+
+---
+
+## 11. OpenCode CLI Skills Entegrasyonu
+
+Bu proje `.opencode/skills/` altında 8 skill barındırır:
+
+| Skill | Kaynak | Amaç | ADLER Kodu |
+|-------|--------|------|------------|
+| `context-aware-coding` | Yerleşik | Katman tespiti (frontend/backend/db/config) | Dokunmaz |
+| `modular-thinking` | Yerleşik | Çok dosyalı işleri adım adım bölme | Dokunmaz |
+| `documentation-first` | Yerleşik | Doc comment zorunluluğu | Dokunmaz |
+| `parseltongue` | G0DM0D3 | Input perturbation, red-teaming | Dokunmaz |
+| `autotune` | G0DM0D3 | Context-adaptive LLM parametre optimizasyonu | Dokunmaz |
+| `ultraplinian` | G0DM0D3 | Multi-model racing & karşılaştırma | Dokunmaz |
+| `stm` | G0DM0D3 | Semantic Transformation (output normalization) | Dokunmaz |
+| `godmode` | G0DM0D3 | Liberated AI prompt stratejileri | Dokunmaz |
+
+### 11.1 Skill Kullanım Kuralları
+- `context-aware-coding` + `documentation-first` **her seferinde** yüklenir.
+- `modular-thinking` çok dosyalı işlerde otomatik tetiklenir.
+- G0DM0D3 skill'leri (`parseltongue`, `autotune`, `ultraplinian`, `stm`, `godmode`) yalnızca o konularla ilgili **özel görevlerde** aktive edilir — günlük ADLER geliştirmede kullanılmaz.
+- Yeni bir skill eklendiğinde opencode'un **restart edilmesi gerekir**.
+
+### 11.2 ADLER Skill'leri vs OpenCode Skill'leri
+- **ADLER Skill'leri:** `skill/` altında (veya DB'de) — ADLER'in kendisinin çalıştırdığı yetenekler.
+- **OpenCode Skill'leri:** `.opencode/skills/` altında — opencode CLI'ın davranışını yönlendiren talimat dosyaları.
+- İkisi asla çakışmaz; OpenCode skill'leri ADLER proje koduna (`src-tauri/`, `src/`) dokunmaz.
