@@ -82,6 +82,17 @@ impl Orchestrator {
         memory: Option<&MemoryManager>,
         event_bus: Option<&EventBus>,
     ) -> Result<String, String> {
+        self.run_pipeline_with_intent(task, ollama, memory, event_bus, None)
+    }
+
+    pub fn run_pipeline_with_intent(
+        &self,
+        task: &str,
+        ollama: &OllamaClient,
+        memory: Option<&MemoryManager>,
+        event_bus: Option<&EventBus>,
+        preclassified_intent: Option<String>,
+    ) -> Result<String, String> {
         let ctx = AgentContext {
             ollama,
             claude: self.claude.as_ref(),
@@ -117,7 +128,10 @@ impl Orchestrator {
         }
 
         // 1. Intent Analysis
-        let intent = self.step_intent(task, ollama)?;
+        let intent = match preclassified_intent {
+            Some(i) => i,
+            None => self.step_intent(task, ollama)?,
+        };
         let log = format!("[Pipeline] STEP 1/6 — Intent: {}", intent);
         if let Some(bus) = event_bus {
             bus.emit("pipeline-step", &log);

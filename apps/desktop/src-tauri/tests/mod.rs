@@ -14,3 +14,4 @@ pub mod concurrent_agents;
 pub mod wasm_sandbox;
 pub mod security_chain;
 pub mod rag_pipeline;
+pub mod nlu_tests;

@@ -1,5 +1,6 @@
 use crate::nlu::intent::Intent;
 
+#[derive(Debug, Clone, PartialEq)]
 pub enum Language {
     Turkish,
     English,

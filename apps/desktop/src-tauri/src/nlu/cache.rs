@@ -18,6 +18,9 @@ impl IntentCache {
 
     pub fn set(&mut self, text: &str, intent: Intent) {
         let key = text.to_lowercase().trim().to_string();
+        if self.max_entries == 0 {
+            return;
+        }
         if self.cache.len() >= self.max_entries {
             if let Some(oldest) = self.cache.keys().next().cloned() {
                 self.cache.remove(&oldest);

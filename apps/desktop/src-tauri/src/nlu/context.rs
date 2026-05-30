@@ -30,6 +30,10 @@ impl ContextResolver {
         text.to_string()
     }
 
+    pub fn has_context(&self) -> bool {
+        !self.history.is_empty()
+    }
+
     pub fn get_last_topic(&self) -> Option<String> {
         for msg in self.history.iter().rev() {
             let lower = msg.to_lowercase();

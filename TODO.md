@@ -1,8 +1,8 @@
 # ADLER ASI — Yapılacaklar Listesi
 
 > **Son güncelleme:** 2026-05-30
-> **Mevcut versiyon:** 0.2.4 (Alpha - Milestone 3: CodeRunner + Strategic Query + Skill Market/Versioning)
-> **Durum:** Alpha — ~%89 komple (266/300 görev tamam)
+> **Mevcut versiyon:** 0.3.0 (Alpha - FAZ 10: NLUPipeline entegrasyonu + A/B Test + 130 NLU test)
+> **Durum:** Alpha — ~%91 komple (274/300 görev tamam)
 
 ---
 
@@ -122,7 +122,11 @@
 - [x] Custom intent registry (kullanıcı tanımlı intent'ler)
 - [x] Prompt templates (intent/entity/sentiment/context için few-shot)
 - [x] Intent cache (LRU)
-- [ ] Intent A/B test (iki prompt versiyonunu karşılaştırma)
+- [x] Intent A/B test (iki prompt versiyonunu karşılaştırma)
+- [x] NLU test suite (130 test — intent, NER, slot, i18n, analytics, pipeline, A/B)
+- [x] NLUPipeline → AppState wire + send_command entegrasyonu
+- [x] IntentAnalytics Tauri command + F1/precision/recall/confusion matrix
+- [x] Confidence kalibrasyonu (rule_match keyword count, LLM word count)
 - [ ] Weekly intent accuracy report
 
 ### Phase 11 — Ollama & Cloud LLM (G181-G205)
@@ -275,7 +279,7 @@
 | 2 | Wasm sandbox henüz skill'lerde aktif değil | Skill'ler native çalışır | ORTA |
 | 3 | LLM pipeline canlı Ollama gerektiriyor | Testler mock LLM ile geçer | DÜŞÜK |
 | 4 | HW Controller gerçek GPIO gerektiriyor | Simulator mod ile test | DÜŞÜK |
-| 5 | SystemMetrics mock fallback (Zero-Mock ihlali) | Backend yokken sahte veri gösterir | ORTA |
+| 5 | `ac` keyword'u `aç` ile eşleşmiyor | Türkçe karakter sorunu | DÜŞÜK |
 | 6 | StatusBar string parsing (`raw.includes("8 ajan")`) | Ajan sayısı değişince kırılır | ORTA |
 | 7 | Husky pre-commit non-blocking modda | Commit öncesi check bypass | DÜŞÜK |
 | 8 | `Result<T, String>` custom error enum yok | Hata zinciri zayıf | ORTA |
@@ -286,13 +290,13 @@
 
 | Metrik | Değer | Hedef |
 |--------|-------|-------|
-| Rust test sayısı | 441 (324 unit + 117 integration) | 500+ |
-| React test sayısı | 232 (36 dosya) | 300+ |
+| Rust test sayısı | 859 (729 unit + 130 integration) | 500+ ✅ |
+| React test sayısı | 237 (37 dosya) | 300+ |
+| NLU test sayısı | 130 | 100+ ✅ |
 | Coverage (stmts) | %69 | %75+ |
 | E2E test | 5 Playwright | 10+ |
 | `cargo check` | 0 error | 0 |
 | `cargo check --no-default-features` | 0 error | 0 |
-| Monorepo | apps/desktop, apps/core, packages/* | Modüler |
 
 ---
 

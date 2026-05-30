@@ -38,6 +38,7 @@ use db::strategic_memory::StrategicMemory;
 use db::fts::FullTextSearch;
 use db::sessions::SessionsStore;
 use rag::pipeline::RagPipeline;
+use nlu::pipeline::NLUPipeline;
 
 pub struct AppState {
     pub memory: Mutex<MemoryManager>,
@@ -48,6 +49,7 @@ pub struct AppState {
     pub rag: Mutex<Option<RagPipeline>>,
     pub sessions: Mutex<SessionsStore>,
     pub hardware: Mutex<Option<agents::hardware::HardwareController>>,
+    pub nlu: Mutex<NLUPipeline>,
 }
 
 #[tauri::command]
@@ -68,11 +70,20 @@ fn send_command(state: State<AppState>, command: String) -> Result<String, Strin
         bus.emit("user-command", &command);
     }
 
-    let result = orchestrator.run_pipeline(
+    let intent_label = {
+        let mut nlu = state.nlu.lock().map_err(|e| e.to_string())?;
+        let result = nlu.process(&command);
+        let label = result.intent.as_str().to_string();
+        nlu.analytics.record(&result.intent, result.confidence);
+        label
+    };
+
+    let result = orchestrator.run_pipeline_with_intent(
         &command,
         llm,
         Some(&memory),
         event_bus_guard.as_ref(),
+        Some(intent_label),
     );
 
     if let Ok(ref report) = result {
@@ -93,6 +104,12 @@ fn approve_action(state: State<AppState>, id: String) -> Result<String, String> 
 fn reject_action(state: State<AppState>, id: String) -> Result<String, String> {
     let orchestrator = state.orchestrator.lock().map_err(|e| e.to_string())?;
     orchestrator.reject(&id).map(|_| "Rejected".into())
+}
+
+#[tauri::command]
+fn get_intent_analytics(state: State<AppState>) -> Result<String, String> {
+    let nlu = state.nlu.lock().map_err(|e| e.to_string())?;
+    Ok(nlu.analytics.report())
 }
 
 #[tauri::command]
@@ -375,6 +392,8 @@ fn init_app_state(app: &tauri::App, config: &AppConfig) -> Result<(), Box<dyn st
     orchestrator.register_agent(Box::new(agents::voice_handler::VoiceHandler::new()));
     orchestrator.register_agent(Box::new(SupervisorAgent));
 
+    let nlu_pipeline = NLUPipeline::new(ollama.clone());
+
     let event_bus = Some(EventBus::new(app.handle().clone()));
 
     let mcp_server = mcp::server::McpServer::new(config.mcp_port);
@@ -394,6 +413,7 @@ fn init_app_state(app: &tauri::App, config: &AppConfig) -> Result<(), Box<dyn st
         rag: Mutex::new(Some(rag_pipeline)),
         sessions: Mutex::new(sessions),
         hardware: Mutex::new(Some(agents::hardware::HardwareController::new_real())),
+        nlu: Mutex::new(nlu_pipeline),
     });
 
     tauri::async_runtime::spawn(server::start_server(app.handle().clone()));
